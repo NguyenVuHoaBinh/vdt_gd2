@@ -1,0 +1,8 @@
+version: "3.8"
+
+networks:
+  vdt-project:
+    driver: bridge
+
+services:
+  #MySQL
