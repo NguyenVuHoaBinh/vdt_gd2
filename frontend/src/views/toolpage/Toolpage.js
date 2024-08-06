@@ -32,7 +32,7 @@ const Toolpage = () => {
                 <CCardText>
                     Quickly generate SQL command to MySQL database and retrieve any information you desired.
                 </CCardText>
-                <CButton color="primary" href="http://localhost:3000/#/mysqltool">Use</CButton>
+                <CButton color="primary" href="http://localhost:3000/#/NLP2MySQL">Use</CButton>
             </CCardBody>
             </CCard>
 

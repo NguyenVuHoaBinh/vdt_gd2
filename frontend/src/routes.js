@@ -5,8 +5,7 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 const Toolpage = React.lazy(() => import('./views/toolpage/Toolpage'))
-const NLP2MySQL = React.lazy(()=> import('./views/nlp2mysql/NLP2MySQL'))
-const MySQLTool = React.lazy(()=> import('./components/MySQLTool'))
+const NLP2MySQL = React.lazy(()=> import('./components/nlp2mysql/NLP2MySQL'))
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -58,7 +57,6 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/toolpage', name:'Toolpage', element: Toolpage},
-  { path: '/mysqltool', name:'MySQLTool', element: MySQLTool},
   { path: '/nlp2mysql', name:'NLP2MySQL', element: NLP2MySQL},
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
