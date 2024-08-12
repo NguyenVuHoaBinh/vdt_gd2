@@ -1,27 +1,51 @@
 package Viettel.backend.controller;
 
-
+import Viettel.backend.service.SQLExecutionService;
+import Viettel.backend.service.DataHubIngestionService;
 import Viettel.backend.config.DatabaseConfig;
+import Viettel.backend.service.GraphQLService;
 import Viettel.backend.service.LLMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
-//@RequestMapping("/clients")`
 public class ChatController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     @Autowired
     private DatabaseConfig databaseConfig;
 
     @Autowired
+    private GraphQLService graphQLService;
+
+    @Autowired
     private LLMService llmService;
+
+    @Autowired
+    private DataHubIngestionService dataHubIngestionService;
+
+    @Autowired
+    private SQLExecutionService sqlExecutionService;
+
+    private Map<String, String> dbParamsStore = new HashMap<>();  // In-memory store for dbParams
+
 
     private JdbcTemplate jdbcTemplate;
 
@@ -29,33 +53,113 @@ public class ChatController {
     public Map<String, Object> connect(@RequestBody Map<String, String> dbParams) {
         Map<String, Object> response = new HashMap<>();
         try {
+            // Create DataSource and set up JdbcTemplate
             DataSource dataSource = databaseConfig.createDataSource(dbParams);
             this.jdbcTemplate = new JdbcTemplate(dataSource);
+
             // Test the connection
             jdbcTemplate.execute("SELECT 1");
             response.put("success", true);
+
+            // Store the dbParams for later use in the chat method
+            dbParamsStore.putAll(dbParams);
+
+            // Generate the ingestion configuration file
+            dataHubIngestionService.generateIngestionConfig(dbParams);
+
+            // Run the ingestion pipeline and capture the result
+            String ingestionResult = dataHubIngestionService.runIngestionPipeline().toString();
+            response.put("ingestionResult", ingestionResult);
+
+            // Fetch metadata
+            String metadata = graphQLService.fetchDatabaseSchema(dbParams.get("database"));
+            response.put("metadata", metadata);
+
         } catch (Exception e) {
+            logger.error("Connection failed", e);
             response.put("success", false);
-            response.put("message", e.getMessage());
+            response.put("message", "Connection failed: " + e.getMessage());
         }
         return response;
     }
 
     @PostMapping("/chat")
-    public Map<String, String> chat(@RequestBody Map<String, String> chatParams) {
-        String message = chatParams.get("message");
-        String model = chatParams.get("model");
-        String response = llmService.processMessage(message, model);
-        Map<String, String> result = new HashMap<>();
-        result.put("response", response);
+    public Map<String, Object> chat(@RequestBody Map<String, Object> chatParams) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String message = (String) chatParams.get("message");
+            String model = (String) chatParams.get("model");
+            String systemRole = (String) chatParams.get("systemRole");
+            String metadata = (String) chatParams.get("metadata");
+
+            // Retrieve stored dbParams
+            Map<String, String> dbParams = dbParamsStore;
+
+            if (dbParams == null || dbParams.isEmpty()) {
+                logger.error("No database connection parameters found. Please connect first.");
+                result.put("error", "No database connection parameters found. Please connect first.");
+                return result;
+            }
+
+            // Combine system role, metadata, and message
+            String combinedPrompt = (systemRole != null ? systemRole : "") + "\n\n" + metadata;
+            logger.info("System message: " + combinedPrompt);
+
+            // Process the message with the LLM
+            Map<String, String> processedResult = llmService.processMessage(message, model, combinedPrompt);
+            String fullResponse = processedResult.get("fullResponse");
+            String sqlQuery = processedResult.get("sqlQuery");
+
+            result.put("fullResponse", fullResponse);
+            logger.info("full Response:",fullResponse);
+
+            if (sqlQuery != null && !sqlQuery.isEmpty()) {
+                logger.info("Extracted SQL Query: " + sqlQuery);
+
+                // Execute the extracted SQL query with stored dbParams
+                List<Map<String, Object>> queryResult = sqlExecutionService.executeQuery(sqlQuery, dbParams);
+
+                result.put("sqlQuery", sqlQuery);
+                result.put("queryResult", queryResult);
+            } else {
+                result.put("sqlQuery", "No SQL query found in the response.");
+            }
+
+        } catch (Exception e) {
+            logger.error("Error processing chat", e);
+            result.put("error", "Failed to process the request: " + e.getMessage());
+        }
+
         return result;
     }
 
+
     @PostMapping("/upload")
     public Map<String, String> uploadFile(@RequestParam("file") MultipartFile file) {
-        // Handle file upload logic here
         Map<String, String> response = new HashMap<>();
-        response.put("response", "File uploaded successfully: " + file.getOriginalFilename());
+        try {
+            // Define the directory where files will be saved
+            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+
+            // Create the directory if it doesn't exist
+            Path directoryPath = Paths.get(uploadDir);
+            if (!Files.exists(directoryPath)) {
+                Files.createDirectories(directoryPath);
+            }
+
+            // Save the file to the specified directory
+            Path filePath = directoryPath.resolve(file.getOriginalFilename());
+            logger.info("Saving file to: " + filePath.toAbsolutePath());
+            file.transferTo(filePath.toFile());
+
+            response.put("response", "File uploaded successfully: " + file.getOriginalFilename());
+        } catch (IOException e) {
+            logger.error("File upload failed", e);
+            response.put("response", "File upload failed: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred", e);
+            response.put("response", "An unexpected error occurred: " + e.getMessage());
+        }
         return response;
     }
 }

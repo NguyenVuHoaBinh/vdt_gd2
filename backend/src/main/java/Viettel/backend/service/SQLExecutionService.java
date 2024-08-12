@@ -1,15 +1,35 @@
-package Viettel.backend.config;
+package Viettel.backend.service;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
+import java.util.List;
 import java.util.Map;
 
-@Configuration
-public class DatabaseConfig {
+@Service
+public class SQLExecutionService {
 
-    public DataSource createDataSource(Map<String, String> dbParams) {
+    private JdbcTemplate jdbcTemplate;
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    public List<Map<String, Object>> executeQuery(String sql, Map<String, String> dbParams) {
+        try {
+            setDataSource(createDataSource(dbParams));
+            return jdbcTemplate.queryForList(sql);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to execute query: " + e.getMessage(), e);
+        }
+    }
+
+    private DataSource createDataSource(Map<String, String> dbParams) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
         String dbType = dbParams.get("dbType");

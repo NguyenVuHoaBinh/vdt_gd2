@@ -24,8 +24,8 @@ import {
 } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
 
-const NLP2MySQL = () => {
-  const [dbParams, setDbParams] = useState({ host: '', database: '', user: '', password: '', dbType: 'mysql' });
+const NLP2PostGreSQL = () => {
+  const [dbParams, setDbParams] = useState({ host: '', database: '', user: '', password: '', dbType: 'postgres' });
   const [model, setModel] = useState('');
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -103,7 +103,7 @@ const NLP2MySQL = () => {
     setChatLog(newChatLog);
 
     try {
-      const role = "You are a powerful AI Assistant. You respond only to any request that is related to data for MySQL queries. Your task is to convert their request into SQL queries. The next part is the metadata that help you generate right queries.";
+      const role = "You are a powerful AI Assistant. You respond only to any request that is related to data for PostgreSQL queries. Your task is to convert their request into SQL queries. The next part is the metadata that help you generate right queries.";
       const response = await fetch('http://localhost:8089/chat', {
         method: 'POST',
         headers: {
@@ -114,7 +114,11 @@ const NLP2MySQL = () => {
       const result = await response.json();
 
       // Extract the query result and the SQL query from the response
-      setChatLog([...newChatLog, { user: 'bot', text: `SQL Query: ${result.sqlQuery}\nResult:\n${JSON.stringify(result.queryResult, null, 2)}` }]);
+      setChatLog([...newChatLog, { 
+        user: 'bot', 
+        text:   `${result.fullResponse}\n\n
+                SQL Query: ${result.sqlQuery}\n\n
+                Result:\n${JSON.stringify(result.queryResult, null, 2)}` }]);
       setQueryResult(result.queryResult);
     } catch (error) {
       setChatLog([...newChatLog, { user: 'bot', text: 'Error fetching response' }]);
@@ -146,9 +150,9 @@ const NLP2MySQL = () => {
 
   return (
     <div>
-      <h1>MySQL Query</h1>
+      <h1>PostGreSQL Query</h1>
       <CCard>
-        <CCardHeader>Connect to MySQL Database</CCardHeader>
+        <CCardHeader>Connect to PostGreSQL Database</CCardHeader>
         <CCardBody>
           <CForm>
             <CInputGroup className="mb-3">
@@ -170,7 +174,7 @@ const NLP2MySQL = () => {
             <CInputGroup className="mb-3">
               <CInputGroupText>Database Type</CInputGroupText>
               <CFormSelect id="dbType" name="dbType" value={dbParams.dbType} onChange={handleInputChange}>
-                <option value="mysql">MySQL</option>
+                <option value="postgres">PostGreSQL</option>
               </CFormSelect>
             </CInputGroup>
             <CInputGroup className="mb-3">
@@ -252,4 +256,4 @@ const NLP2MySQL = () => {
   );
 };
 
-export default NLP2MySQL;
+export default NLP2PostGreSQL;

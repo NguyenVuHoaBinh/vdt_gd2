@@ -1,0 +1,11 @@
+source:
+  type: mysql
+  config:
+    username: "root"
+    password: "<your_mysql_password>"
+    database: "<your_database_name>"
+    host_port: "localhost:3306"
+sink:
+  type: "datahub-rest"
+  config:
+    server: "http://localhost:8080"

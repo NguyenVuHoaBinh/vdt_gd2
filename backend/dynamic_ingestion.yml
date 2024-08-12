@@ -1,0 +1,11 @@
+source:
+  type: postgres
+  config:
+    username: postgres
+    password: hoabinh12
+    database: bookstore
+    host_port: 172.31.0.1:5433
+sink:
+  type: datahub-rest
+  config:
+    server: http://localhost:8080
