@@ -31,7 +31,6 @@ public class GraphQLService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer your-datahub-token");  // Replace with your actual DataHub API token
 
         // Prepare the JSON request body
         String jsonQuery = "{\"query\":\"" + query + "\"}";

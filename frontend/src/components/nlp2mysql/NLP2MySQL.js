@@ -17,12 +17,12 @@ import {
   CModalTitle
 } from '@coreui/react';
 import {
-  MessageBox,
-  MessageList,
   Input,
   Button as ChatButton
 } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 const NLP2MySQL = () => {
   const [dbParams, setDbParams] = useState({ host: '', database: '', user: '', password: '', dbType: 'mysql' });
@@ -34,14 +34,28 @@ const NLP2MySQL = () => {
   const [chatLog, setChatLog] = useState([]);
   const [metadata, setMetadata] = useState('');
   const [queryResult, setQueryResult] = useState(null);
+  const [sessionId, setSessionId] = useState(null); // State for session ID
   const chatRef = useRef(null);
 
+  // Effect to generate session ID on page load
   useEffect(() => {
-    // Scroll to the bottom when chat log updates
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    let currentSessionId = sessionId;
+    if (!currentSessionId) {
+      // If no session ID exists, generate a new one and store it
+      currentSessionId = generateSessionId();
+      setSessionId(currentSessionId);
     }
-  }, [chatLog]);
+  }, []); // Empty dependency array means this effect runs once when the component mounts
+
+  const generateSessionId = () => {
+    return `session-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  };
+
+  const startNewSession = () => {
+    const newSessionId = generateSessionId();
+    setSessionId(newSessionId);
+    setChatLog([]);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -55,26 +69,30 @@ const NLP2MySQL = () => {
       return;
     }
 
+    if (!sessionId) {
+      startNewSession();  // Generate a session ID if none exists
+    }
+
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8089/connect', {
+      const response = await fetch('http://localhost:8888/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dbParams),
+        body: JSON.stringify({ ...dbParams, sessionId }),
       });
       const result = await response.json();
-      
+
       if (result.success) {
         setConnected(true);
         let message = 'Connection established!';
         setMetadata(result.metadata);
-        
+
         if (result.ingestionResult) {
           message += `\nIngestion Result: ${result.ingestionResult}`;
         }
-        
+
         setModalMessage(message);
       } else {
         setModalMessage(`Connection failed: ${result.message || 'Unknown error'}`);
@@ -99,26 +117,83 @@ const NLP2MySQL = () => {
       return;
     }
 
+    if (!sessionId) {
+      startNewSession();  // Generate a session ID if none exists
+    }
+
     const newChatLog = [...chatLog, { user: 'user', text: message }];
     setChatLog(newChatLog);
 
     try {
       const role = "You are a powerful AI Assistant. You respond only to any request that is related to data for MySQL queries. Your task is to convert their request into SQL queries. The next part is the metadata that help you generate right queries.";
-      const response = await fetch('http://localhost:8089/chat', {
+      const response = await fetch('http://localhost:8888/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message, model, role, metadata }),
+        body: JSON.stringify({ message, model, systemRole: role, metadata, sessionId }),
       });
       const result = await response.json();
 
-      // Extract the query result and the SQL query from the response
-      setChatLog([...newChatLog, { user: 'bot', text: `SQL Query: ${result.sqlQuery}\nResult:\n${JSON.stringify(result.queryResult, null, 2)}` }]);
+      const table = generateTable(result.queryResult);
+
+      const messages = [
+        { text: `${result.fullResponse}`, user: 'bot' },
+        { text: `**SQL Query:**\n\`\`\`sql\n${result.sqlQuery}\n\`\`\``, user: 'bot' },
+        { text: `**Result:**\n${table}`, user: 'bot' }
+      ];
+
+      if (result.imageId) {
+        const imageUrl = await fetchImage(result.imageId);
+        messages.push({ user: 'bot', text: `<img src="${imageUrl}" alt="Response Image" style="max-width: 100%; height: auto;" />` });
+      }
+
+      const addMessagesWithDelay = (messages, delay) => {
+        messages.forEach((message, index) => {
+          setTimeout(() => {
+            setChatLog(prevChatLog => [...prevChatLog, message]);
+          }, index * delay);
+        });
+      };
+
+      addMessagesWithDelay(messages, 1000);
+
       setQueryResult(result.queryResult);
     } catch (error) {
       setChatLog([...newChatLog, { user: 'bot', text: 'Error fetching response' }]);
     }
+  };
+
+  const fetchImage = async (imageId) => {
+    try {
+      const response = await fetch(`http://localhost:8888/image/${imageId}`, {
+        method: 'GET',
+      });
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      return url;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
+  };
+
+  const generateTable = (data) => {
+    if (!Array.isArray(data) || data.length === 0) return '';
+
+    const headers = Object.keys(data[0]);
+
+    const headerRow = headers.map(header => `<th>${header}</th>`).join('');
+
+    const rows = data.map(row => {
+      const rowData = headers.map(header => `<td>${row[header]}</td>`).join('');
+      return `<tr>${rowData}</tr>`;
+    }).join('');
+
+    return `<table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+      <thead><tr>${headerRow}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
   };
 
   const handleFileUpload = async (e) => {
@@ -132,16 +207,38 @@ const NLP2MySQL = () => {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const response = await fetch('http://localhost:8089/upload', {
+      const response = await fetch('http://localhost:8888/upload', {
         method: 'POST',
         body: formData,
       });
       const result = await response.json();
       setModalMessage(result.response || 'File uploaded successfully');
+
+      if (result.imageId) {
+        const imageUrl = await fetchImage(result.imageId);
+        // Add the image to the chat log
+        setChatLog(prevChatLog => [
+          ...prevChatLog, 
+          { user: 'user', text: `<img src="${imageUrl}" alt="Uploaded Image" style="max-width: 100%; height: auto;" />` }
+        ]);
+      }
     } catch (error) {
       setModalMessage(`Error uploading file: ${error.message}`);
     }
     setModalVisible(true);
+  };
+
+  const renderChatMessage = (entry) => {
+    return (
+      <div
+        key={entry.text}
+        style={{ marginBottom: '10px', textAlign: entry.user === 'user' ? 'right' : 'left' }}
+      >
+        <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+          {entry.text}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   return (
@@ -189,20 +286,15 @@ const NLP2MySQL = () => {
       </CCard>
 
       <CCard className="mt-4">
-        <CCardHeader>Chatbot</CCardHeader>
+        <CCardHeader>
+          Chatbot (Session ID: {sessionId || 'N/A'})
+          <CButton color="warning" onClick={startNewSession} className="float-end">
+            Start New Session
+          </CButton>
+        </CCardHeader>
         <CCardBody>
           <div ref={chatRef} style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            <MessageList
-              className="message-list"
-              lockable={true}
-              toBottomHeight={'100%'}
-              dataSource={chatLog.map((entry, index) => ({
-                position: entry.user === 'user' ? 'right' : 'left',
-                type: 'text',
-                text: entry.text,
-                date: new Date(),
-              }))}
-            />
+            {chatLog.map(renderChatMessage)}
           </div>
           <Input
             placeholder="Type message here"

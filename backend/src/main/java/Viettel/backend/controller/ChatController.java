@@ -5,9 +5,9 @@ import Viettel.backend.service.DataHubIngestionService;
 import Viettel.backend.config.DatabaseConfig;
 import Viettel.backend.service.GraphQLService;
 import Viettel.backend.service.LLMService;
+import Viettel.backend.service.VectorDBService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
@@ -44,22 +44,21 @@ public class ChatController {
     @Autowired
     private SQLExecutionService sqlExecutionService;
 
+    @Autowired
+    private VectorDBService vectorDBService;
+
     private Map<String, String> dbParamsStore = new HashMap<>();  // In-memory store for dbParams
-
-
     private JdbcTemplate jdbcTemplate;
 
     @PostMapping("/connect")
     public Map<String, Object> connect(@RequestBody Map<String, String> dbParams) {
         Map<String, Object> response = new HashMap<>();
         try {
+            String sessionId = (String) dbParams.get("sessionId");
+
             // Create DataSource and set up JdbcTemplate
             DataSource dataSource = databaseConfig.createDataSource(dbParams);
             this.jdbcTemplate = new JdbcTemplate(dataSource);
-
-            // Test the connection
-            jdbcTemplate.execute("SELECT 1");
-            response.put("success", true);
 
             // Store the dbParams for later use in the chat method
             dbParamsStore.putAll(dbParams);
@@ -68,13 +67,24 @@ public class ChatController {
             dataHubIngestionService.generateIngestionConfig(dbParams);
 
             // Run the ingestion pipeline and capture the result
-            String ingestionResult = dataHubIngestionService.runIngestionPipeline().toString();
+            DataHubIngestionService.IngestionResult ingestionResult = dataHubIngestionService.runIngestionPipeline();
             response.put("ingestionResult", ingestionResult);
 
             // Fetch metadata
             String metadata = graphQLService.fetchDatabaseSchema(dbParams.get("database"));
             response.put("metadata", metadata);
 
+            // Store metadata in the Redis vector store
+            String metadataId = "metadata-" + dbParams.get("database"); // Create a unique ID for metadata
+            Map<String, String> metadataMap = new HashMap<>();
+            metadataMap.put("database", dbParams.get("database"));
+            metadataMap.put("metadata", metadata);
+            metadataMap.put("dbType", dbParams.get("dbType")); // Assuming dbType is part of dbParams
+
+            vectorDBService.storeChatAndMetadata(sessionId, "Database connected.", Map.of("metadata", metadata));
+
+            // Set success to true
+            response.put("success", true);
         } catch (Exception e) {
             logger.error("Connection failed", e);
             response.put("success", false);
@@ -91,6 +101,7 @@ public class ChatController {
             String model = (String) chatParams.get("model");
             String systemRole = (String) chatParams.get("systemRole");
             String metadata = (String) chatParams.get("metadata");
+            String sessionId = (String) chatParams.get("sessionId");
 
             // Retrieve stored dbParams
             Map<String, String> dbParams = dbParamsStore;
@@ -101,9 +112,12 @@ public class ChatController {
                 return result;
             }
 
-            // Combine system role, metadata, and message
-            String combinedPrompt = (systemRole != null ? systemRole : "") + "\n\n" + metadata;
-            logger.info("System message: " + combinedPrompt);
+            // Perform semantic search using the combined user query and metadata
+            String searchResult = vectorDBService.semanticSearch(message, metadata);
+
+            // Combine system role, search result, and user message to create a prompt
+            String combinedPrompt = (systemRole != null ? systemRole : "") + "\n\n" + searchResult + "\n\n" + message;
+            logger.info("Combined Prompt: " + combinedPrompt);
 
             // Process the message with the LLM
             Map<String, String> processedResult = llmService.processMessage(message, model, combinedPrompt);
@@ -111,7 +125,7 @@ public class ChatController {
             String sqlQuery = processedResult.get("sqlQuery");
 
             result.put("fullResponse", fullResponse);
-            logger.info("full Response:",fullResponse);
+            logger.info("Full Response: " + fullResponse);
 
             if (sqlQuery != null && !sqlQuery.isEmpty()) {
                 logger.info("Extracted SQL Query: " + sqlQuery);
@@ -125,6 +139,9 @@ public class ChatController {
                 result.put("sqlQuery", "No SQL query found in the response.");
             }
 
+            // Store the user chat session in the Redis vector store
+            //vectorDBService.storeUserChat(sessionId, message, fullResponse);
+
         } catch (Exception e) {
             logger.error("Error processing chat", e);
             result.put("error", "Failed to process the request: " + e.getMessage());
@@ -132,7 +149,6 @@ public class ChatController {
 
         return result;
     }
-
 
     @PostMapping("/upload")
     public Map<String, String> uploadFile(@RequestParam("file") MultipartFile file) {

@@ -29,7 +29,7 @@ public class DatabaseConfig {
                 break;
             case "mssql":
                 dataSource.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                dataSource.setUrl("jdbc:sqlserver://" + host + ";databaseName=" + database+";encrypt=true;trustServerCertificate=true");
+                dataSource.setUrl("jdbc:sqlserver://" + host + ";databaseName=" + database + ";encrypt=true;trustServerCertificate=true");
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported database type: " + dbType);

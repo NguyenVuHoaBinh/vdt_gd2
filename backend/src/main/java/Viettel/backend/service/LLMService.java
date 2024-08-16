@@ -51,7 +51,7 @@ public class LLMService {
                 Map.of("role", "system", "content", role),
                 Map.of("role", "user", "content", message)
         ));
-        requestBody.put("max_tokens", 100);
+        requestBody.put("max_tokens", 200);
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
