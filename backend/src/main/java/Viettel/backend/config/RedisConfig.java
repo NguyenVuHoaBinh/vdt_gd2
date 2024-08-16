@@ -7,10 +7,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.vectorstore.RedisVectorStore;
 import org.springframework.ai.vectorstore.RedisVectorStore.RedisVectorStoreConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPooled;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 public class RedisConfig {
@@ -30,6 +35,20 @@ public class RedisConfig {
         // Connect to Redis node
         return new JedisPooled("localhost", 6377,"hoabinh12","hoabinh12");
     }
+
+    @Bean
+    public JedisCluster jedisCluster() {
+        Set<HostAndPort> clusterNodes = new HashSet<>();
+        clusterNodes.add(new HostAndPort("localhost", 6371));
+        clusterNodes.add(new HostAndPort("localhost", 6372));
+        clusterNodes.add(new HostAndPort("localhost", 6373));
+        clusterNodes.add(new HostAndPort("localhost", 6374));
+        clusterNodes.add(new HostAndPort("localhost", 6375));
+        clusterNodes.add(new HostAndPort("localhost", 6376));
+
+        return new JedisCluster(clusterNodes, 5000, 5000, 3, "hoabinh12",null);
+    }
+
 
     @Bean
     public OpenAiEmbeddingModel embeddingModel(OpenAiApi openAiApi) {

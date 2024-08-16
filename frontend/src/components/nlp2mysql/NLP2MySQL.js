@@ -37,7 +37,6 @@ const NLP2MySQL = () => {
   const [sessionId, setSessionId] = useState(null); // State for session ID
   const chatRef = useRef(null);
 
-  // Effect to generate session ID on page load
   useEffect(() => {
     let currentSessionId = sessionId;
     if (!currentSessionId) {
@@ -45,7 +44,7 @@ const NLP2MySQL = () => {
       currentSessionId = generateSessionId();
       setSessionId(currentSessionId);
     }
-  }, []); // Empty dependency array means this effect runs once when the component mounts
+  }, []);
 
   const generateSessionId = () => {
     return `session-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -70,7 +69,7 @@ const NLP2MySQL = () => {
     }
 
     if (!sessionId) {
-      startNewSession();  // Generate a session ID if none exists
+      startNewSession();
     }
 
     setLoading(true);
@@ -118,7 +117,7 @@ const NLP2MySQL = () => {
     }
 
     if (!sessionId) {
-      startNewSession();  // Generate a session ID if none exists
+      startNewSession();
     }
 
     const newChatLog = [...chatLog, { user: 'user', text: message }];
@@ -216,7 +215,6 @@ const NLP2MySQL = () => {
 
       if (result.imageId) {
         const imageUrl = await fetchImage(result.imageId);
-        // Add the image to the chat log
         setChatLog(prevChatLog => [
           ...prevChatLog, 
           { user: 'user', text: `<img src="${imageUrl}" alt="Uploaded Image" style="max-width: 100%; height: auto;" />` }

@@ -6,6 +6,8 @@ import Viettel.backend.config.DatabaseConfig;
 import Viettel.backend.service.GraphQLService;
 import Viettel.backend.service.LLMService;
 import Viettel.backend.service.VectorDBService;
+import Viettel.backend.service.ChatMemoryService;
+import Viettel.backend.service.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +20,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @CrossOrigin("*")
@@ -47,14 +49,26 @@ public class ChatController {
     @Autowired
     private VectorDBService vectorDBService;
 
+    @Autowired
+    private ChatMemoryService chatMemoryService;
+
+    @Autowired
+    private CacheService cacheService;
+
     private Map<String, String> dbParamsStore = new HashMap<>();  // In-memory store for dbParams
     private JdbcTemplate jdbcTemplate;
+
+    // Method to generate a session ID
+    private String generateSessionId() {
+        return UUID.randomUUID().toString();
+    }
 
     @PostMapping("/connect")
     public Map<String, Object> connect(@RequestBody Map<String, String> dbParams) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String sessionId = (String) dbParams.get("sessionId");
+            // Generate a session ID if not provided
+            String sessionId = dbParams.getOrDefault("sessionId", generateSessionId());
 
             // Create DataSource and set up JdbcTemplate
             DataSource dataSource = databaseConfig.createDataSource(dbParams);
@@ -81,9 +95,14 @@ public class ChatController {
             metadataMap.put("metadata", metadata);
             metadataMap.put("dbType", dbParams.get("dbType")); // Assuming dbType is part of dbParams
 
-            vectorDBService.storeChatAndMetadata(sessionId, "Database connected.", Map.of("metadata", metadata));
+            // Store chat session metadata
+            chatMemoryService.storeSessionMetadata(sessionId, metadataMap);
 
-            // Set success to true
+            // Store the initial connection message in chat history
+            chatMemoryService.storeUserChat(sessionId, "System", "Database connected.");
+
+            // Set success to true and return session ID
+            response.put("sessionId", sessionId);
             response.put("success", true);
         } catch (Exception e) {
             logger.error("Connection failed", e);
@@ -119,6 +138,14 @@ public class ChatController {
             String combinedPrompt = (systemRole != null ? systemRole : "") + "\n\n" + searchResult + "\n\n" + message;
             logger.info("Combined Prompt: " + combinedPrompt);
 
+            // Check cache for previous similar query
+            String cachedResponse = cacheService.getCachedResponse(combinedPrompt);
+            if (cachedResponse != null) {
+                logger.info("Cache hit, returning cached response.");
+                result.put("fullResponse", cachedResponse);
+                return result;
+            }
+
             // Process the message with the LLM
             Map<String, String> processedResult = llmService.processMessage(message, model, combinedPrompt);
             String fullResponse = processedResult.get("fullResponse");
@@ -140,7 +167,11 @@ public class ChatController {
             }
 
             // Store the user chat session in the Redis vector store
-            //vectorDBService.storeUserChat(sessionId, message, fullResponse);
+            chatMemoryService.storeUserChat(sessionId, "User", message);
+            chatMemoryService.storeUserChat(sessionId, "System", fullResponse);
+
+            // Cache the response for future similar queries
+            cacheService.cacheResponse(combinedPrompt, fullResponse);
 
         } catch (Exception e) {
             logger.error("Error processing chat", e);
