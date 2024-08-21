@@ -2,28 +2,23 @@ package Viettel.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPooled;
 
 @Service
 public class CacheService {
 
-    private static final String CACHE_KEY_PREFIX = "cache:llm:";
+    private final JedisPooled jedisPooled;
 
     @Autowired
-    private JedisCluster jedisCluster;
+    public CacheService(JedisPooled jedisPooled) {
+        this.jedisPooled = jedisPooled;
+    }
 
     public void cacheResponse(String prompt, String response) {
-        String key = CACHE_KEY_PREFIX + prompt.hashCode();
-        jedisCluster.set(key, response);
+        jedisPooled.setex("cache:response:" + prompt, 3600, response); // Cache for 1 hour
     }
 
     public String getCachedResponse(String prompt) {
-        String key = CACHE_KEY_PREFIX + prompt.hashCode();
-        return jedisCluster.get(key);
-    }
-
-    public void clearCache(String prompt) {
-        String key = CACHE_KEY_PREFIX + prompt.hashCode();
-        jedisCluster.del(key);
+        return jedisPooled.get("cache:response:" + prompt);
     }
 }

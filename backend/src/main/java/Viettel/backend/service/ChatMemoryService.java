@@ -2,44 +2,42 @@ package Viettel.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPooled;
 
 import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
 
 @Service
 public class ChatMemoryService {
 
-    private static final String CHAT_SESSION_KEY_PREFIX = "chat:session:";
-    private static final String METADATA_KEY_SUFFIX = ":metadata";
+    private final JedisPooled jedisPooled;
 
     @Autowired
-    private JedisCluster jedisCluster;
+    public ChatMemoryService(JedisPooled jedisPooled) {
+        this.jedisPooled = jedisPooled;
+    }
 
+    // Store metadata in Redis with the session ID as the key
     public void storeSessionMetadata(String sessionId, Map<String, String> metadata) {
-        String key = CHAT_SESSION_KEY_PREFIX + sessionId + METADATA_KEY_SUFFIX;
-        jedisCluster.hmset(key, metadata);
+        String redisKey = "session:" + sessionId + ":metadata";
+        jedisPooled.hset(redisKey, metadata);
     }
 
+    // Store user chat in Redis
+    public void storeUserChat(String sessionId, String userType, String message) {
+        String redisKey = "session:" + sessionId + ":chat";
+        String messageKey = userType + ":" + System.currentTimeMillis();
+        jedisPooled.hset(redisKey, messageKey, message);
+    }
+
+    // Retrieve metadata from Redis
     public Map<String, String> getSessionMetadata(String sessionId) {
-        String key = CHAT_SESSION_KEY_PREFIX + sessionId + METADATA_KEY_SUFFIX;
-        return jedisCluster.hgetAll(key);
+        String redisKey = "session:" + sessionId + ":metadata";
+        return jedisPooled.hgetAll(redisKey);
     }
 
-    public void storeUserChat(String sessionId, String user, String message) {
-        String key = CHAT_SESSION_KEY_PREFIX + sessionId;
-        jedisCluster.rpush(key, user + ": " + message);
-    }
-
-    public List<String> getUserChatHistory(String sessionId) {
-        String key = CHAT_SESSION_KEY_PREFIX + sessionId;
-        return jedisCluster.lrange(key, 0, -1);
-    }
-
-    public void clearChatSession(String sessionId) {
-        String key = CHAT_SESSION_KEY_PREFIX + sessionId;
-        jedisCluster.del(key);
-        jedisCluster.del(key + METADATA_KEY_SUFFIX);
+    // Retrieve chat history from Redis
+    public Map<String, String> getUserChat(String sessionId) {
+        String redisKey = "session:" + sessionId + ":chat";
+        return jedisPooled.hgetAll(redisKey);
     }
 }

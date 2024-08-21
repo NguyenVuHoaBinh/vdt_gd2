@@ -6,6 +6,7 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class VectorDBService {
 
     private final RedisVectorStore redisVectorStore;
-    private final EmbeddingService embeddingService;
+    private final EmbeddingService embeddingService; // Ensure the EmbeddingService is injected
 
     @Autowired
     public VectorDBService(RedisVectorStore redisVectorStore, EmbeddingService embeddingService) {
@@ -22,60 +23,66 @@ public class VectorDBService {
         this.embeddingService = embeddingService;
     }
 
-    public String semanticSearch(String userQuery, String metadata) {
-        // Combine the user query and metadata
-        String combinedQuery = userQuery + " " + metadata;
-
-        // Perform semantic search in Redis
-        List<Document> searchResults = redisVectorStore.similaritySearch(
-                SearchRequest.query(combinedQuery)
-                        .withTopK(5)  // Fetch top 5 results
-                        .withSimilarityThreshold(0.5)  // Set a similarity threshold
-        );
-
-        // Extract and return content from search results
-        return searchResults.isEmpty() ? "No relevant documents found." : searchResults.stream()
-                .map(Document::getContent)
-                .reduce((a, b) -> a + "\n" + b)
-                .orElse("No relevant documents found.");
-    }
-
-    public void storeChatAndMetadata(String sessionId, String description, Map<String, String> metadata) {
-        // Convert metadata to a string format for embedding
+    // Store session metadata embedding
+    public void storeSessionMetadata(String sessionId, String description, Map<String, String> metadata) {
         StringBuilder metadataString = new StringBuilder();
         for (Map.Entry<String, String> entry : metadata.entrySet()) {
             metadataString.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
         }
 
-        // Generate embedding
         float[] embedding = embeddingService.generateEmbedding(metadataString.toString());
 
-        // Prepare metadata for storage
         Map<String, Object> documentMetadata = new HashMap<>();
         documentMetadata.put("sessionId", sessionId);
         documentMetadata.put("description", description);
         documentMetadata.putAll(metadata);
 
-        // Create a Document object and store it in the Redis vector store
         Document document = new Document(metadataString.toString(), documentMetadata);
         document.setEmbedding(embedding);
 
-        redisVectorStore.add(List.of(document));
+        // Wrap the Document in a List before adding it to the RedisVectorStore
+        redisVectorStore.add(Collections.singletonList(document));
     }
 
-    public void storeUserChat(String sessionId, String userMessage, String modelResponse) {
-        // Prepare metadata for the chat
+    // Store chat message embedding
+    public void storeUserChat(String sessionId, String messageId, String userMessage, String modelResponse) {
+        String combinedContent = userMessage + "\n" + modelResponse;
+        float[] embedding = embeddingService.generateEmbedding(combinedContent);
+
         Map<String, Object> chatMetadata = new HashMap<>();
         chatMetadata.put("sessionId", sessionId);
+        chatMetadata.put("messageId", messageId);
         chatMetadata.put("userMessage", userMessage);
 
-        // Generate embedding for the chat content
-        float[] embedding = embeddingService.generateEmbedding(userMessage + "\n" + modelResponse);
-
-        // Create a Document object and store it in the Redis vector store
-        Document document = new Document(modelResponse, chatMetadata);
+        Document document = new Document(combinedContent, chatMetadata);
         document.setEmbedding(embedding);
 
-        redisVectorStore.add(List.of(document));
+        // Wrap the Document in a List before adding it to the RedisVectorStore
+        redisVectorStore.add(Collections.singletonList(document));
+    }
+
+    // Perform semantic search for session metadata
+    public String searchSessionMetadata(String sessionId, String userQuery) {
+        return performSemanticSearch(userQuery);
+    }
+
+    // Perform semantic search for chat messages
+    public String searchChatMessages(String sessionId, String userQuery) {
+        return performSemanticSearch(userQuery);
+    }
+
+    // Helper method for performing semantic search
+    private String performSemanticSearch(String userQuery) {
+        List<Document> searchResults = redisVectorStore.similaritySearch(
+                SearchRequest.query(userQuery)
+                        .withTopK(5)
+                        .withSimilarityThreshold(0.5)
+        );
+
+        return searchResults.isEmpty() ? "No relevant documents found."
+                : searchResults.stream()
+                .map(Document::getContent)
+                .reduce((a, b) -> a + "\n" + b)
+                .orElse("No relevant documents found.");
     }
 }

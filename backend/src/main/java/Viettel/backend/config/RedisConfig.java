@@ -33,21 +33,10 @@ public class RedisConfig {
     @Bean
     public JedisPooled jedisPooled() {
         // Connect to Redis node
-        return new JedisPooled("localhost", 6377,"hoabinh12","hoabinh12");
+        return new JedisPooled("localhost", 6377);
     }
 
-    @Bean
-    public JedisCluster jedisCluster() {
-        Set<HostAndPort> clusterNodes = new HashSet<>();
-        clusterNodes.add(new HostAndPort("localhost", 6371));
-        clusterNodes.add(new HostAndPort("localhost", 6372));
-        clusterNodes.add(new HostAndPort("localhost", 6373));
-        clusterNodes.add(new HostAndPort("localhost", 6374));
-        clusterNodes.add(new HostAndPort("localhost", 6375));
-        clusterNodes.add(new HostAndPort("localhost", 6376));
 
-        return new JedisCluster(clusterNodes, 5000, 5000, 3, "hoabinh12",null);
-    }
 
 
     @Bean
