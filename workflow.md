@@ -1,1 +1,2 @@
-![Workflow Diagram](Flowcharts.png)
+Workflow General
+![Workflow Diagram](/document/image.png)
