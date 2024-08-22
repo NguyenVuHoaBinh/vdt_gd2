@@ -1,1 +1,1 @@
-![Workflow Diagram](Flowcharts.png)
+![Workflow Diagram](/document/image.png)
