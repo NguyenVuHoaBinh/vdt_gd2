@@ -1,0 +1,515 @@
+{
+"select * from data_warehouse_tables dwt ": [
+	{
+		"id" : 1,
+		"created_date" : "20231205",
+		"description" : "mb_pre_daily_new",
+		"name" : "mb_pre_daily_new",
+		"platform" : "di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 4,
+		"created_date" : "20231205",
+		"description" : "f_ccai_profile_tv360_acc",
+		"name" : "f_ccai_profile_tv360_acc",
+		"platform" : "tv360",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 7,
+		"created_date" : "20231205",
+		"description" : "f_ccai_profile_demographic_cdbr",
+		"name" : "f_ccai_profile_demographic_cdbr",
+		"platform" : "cố định",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 10,
+		"created_date" : "20231205",
+		"description" : "f_sub_info_d",
+		"name" : "f_sub_info_d",
+		"platform" : "di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 13,
+		"created_date" : "20231205",
+		"description" : "f_ccai_behavior_model_output",
+		"name" : "f_ccai_behavior_model_output",
+		"platform" : "Di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 16,
+		"created_date" : "20231205",
+		"description" : "mb_pos_daily_new",
+		"name" : "mb_pos_daily_new",
+		"platform" : "di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 19,
+		"created_date" : "20231205",
+		"description" : "f_ccai_profile_demographic",
+		"name" : "f_ccai_profile_demographic",
+		"platform" : "di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 22,
+		"created_date" : "20231205",
+		"description" : "f_ccai_profile_telecom_month",
+		"name" : "f_ccai_profile_telecom_month",
+		"platform" : "di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 25,
+		"created_date" : "20231205",
+		"description" : "f_ccai_cdbr_log_usage",
+		"name" : "f_ccai_cdbr_log_usage",
+		"platform" : "cố định",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 28,
+		"created_date" : "20231205",
+		"description" : "f_ccai_sme_profile_demographic",
+		"name" : "f_ccai_sme_profile_demographic",
+		"platform" : "SME",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 31,
+		"created_date" : "20231205",
+		"description" : "f_ccai_social_need_month",
+		"name" : "f_ccai_social_need_month",
+		"platform" : "Di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 34,
+		"created_date" : "20231205",
+		"description" : "f_ccai_cskh_demo",
+		"name" : "f_ccai_cskh_demo",
+		"platform" : "di động",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 37,
+		"created_date" : "20231205",
+		"description" : "f_c360_tv360_feature_6mon",
+		"name" : "f_c360_tv360_feature_6mon",
+		"platform" : "TV360",
+		"updated_date" : "20231205"
+	},
+	{
+		"id" : 40,
+		"created_date" : "20231206",
+		"description" : "f_ccai_social_need_daily",
+		"name" : "f_ccai_social_need_daily",
+		"platform" : "Di động",
+		"updated_date" : "20231206"
+	},
+	{
+		"id" : 43,
+		"created_date" : "20231206",
+		"description" : "f_ccai_profile_telecom_acc",
+		"name" : "f_ccai_profile_telecom_acc",
+		"platform" : "Di động",
+		"updated_date" : "20231206"
+	},
+	{
+		"id" : 46,
+		"created_date" : "20231206",
+		"description" : "f_ccai_myviettel_acc",
+		"name" : "f_ccai_myviettel_acc",
+		"platform" : "My Viettel",
+		"updated_date" : "20231206"
+	},
+	{
+		"id" : 49,
+		"created_date" : "20231206",
+		"description" : "mb_pre_new",
+		"name" : "mb_pre_new",
+		"platform" : "di động",
+		"updated_date" : "20231206"
+	},
+	{
+		"id" : 52,
+		"created_date" : "20231206",
+		"description" : "f_ccai_location_home_office",
+		"name" : "f_ccai_location_home_office",
+		"platform" : "Di động",
+		"updated_date" : "20231206"
+	},
+	{
+		"id" : 55,
+		"created_date" : "20231206",
+		"description" : "f_c360_soho",
+		"name" : "f_c360_soho",
+		"platform" : "cố định",
+		"updated_date" : "20231206"
+	},
+	{
+		"id" : 58,
+		"created_date" : "20231206",
+		"description" : "f_ccai_profile_telecom_mon",
+		"name" : "f_ccai_profile_telecom_mon",
+		"platform" : "di động",
+		"updated_date" : "20231206"
+	},
+	{
+		"id" : 61,
+		"created_date" : "20231208",
+		"description" : "f_ccai_social_need_cdbr_daily",
+		"name" : "f_ccai_social_need_cdbr_daily",
+		"platform" : "Cố định băng rộng",
+		"updated_date" : "20231208"
+	},
+	{
+		"id" : 64,
+		"created_date" : "20231211",
+		"description" : "f_ccai_social_need_cdbr_month",
+		"name" : "f_ccai_social_need_cdbr_month",
+		"platform" : "Cố định băng rộng",
+		"updated_date" : "20231211"
+	},
+	{
+		"id" : 67,
+		"created_date" : "20231213",
+		"description" : "f_ccai_social_need_url_d_30",
+		"name" : "f_ccai_social_need_url_d_30",
+		"platform" : "di động",
+		"updated_date" : "20231213"
+	},
+	{
+		"id" : 70,
+		"created_date" : "20231220",
+		"description" : "tmp_tv360_ccai_tb_active",
+		"name" : "tmp_tv360_ccai_tb_active",
+		"platform" : "TV360",
+		"updated_date" : "20231220"
+	},
+	{
+		"id" : 73,
+		"created_date" : "20231227",
+		"description" : "data_codinh",
+		"name" : "data_codinh",
+		"platform" : "cố định",
+		"updated_date" : "20231227"
+	},
+	{
+		"id" : 76,
+		"created_date" : "20231228",
+		"description" : "mb_pos_new",
+		"name" : "mb_pos_new",
+		"platform" : "di động",
+		"updated_date" : "20231228"
+	},
+	{
+		"id" : 79,
+		"created_date" : "20240125",
+		"description" : "f_merchant_bank_social_need_all",
+		"name" : "f_merchant_bank_social_need_all",
+		"platform" : "di động",
+		"updated_date" : "20240125"
+	},
+	{
+		"id" : 82,
+		"created_date" : "20240502",
+		"description" : "f_ccai_call_sms_daily",
+		"name" : "f_ccai_call_sms_daily",
+		"platform" : "di động",
+		"updated_date" : "20240502"
+	},
+	{
+		"id" : 85,
+		"created_date" : "20240502",
+		"description" : "f_ccai_call_sms_mon",
+		"name" : "f_ccai_call_sms_mon",
+		"platform" : "di động",
+		"updated_date" : "20240502"
+	},
+	{
+		"id" : 88,
+		"created_date" : "20240502",
+		"description" : "f_ccai_payment_daily",
+		"name" : "f_ccai_payment_daily",
+		"platform" : "di động",
+		"updated_date" : "20240502"
+	},
+	{
+		"id" : 91,
+		"created_date" : "20240502",
+		"description" : "f_ccai_payment_month",
+		"name" : "f_ccai_payment_month",
+		"platform" : "di động",
+		"updated_date" : "20240502"
+	},
+	{
+		"id" : 94,
+		"created_date" : "20240502",
+		"description" : "f_ccai_buy_data_month",
+		"name" : "f_ccai_buy_data_month",
+		"platform" : "di động",
+		"updated_date" : "20240502"
+	},
+	{
+		"id" : 97,
+		"created_date" : "20240502",
+		"description" : "qltt_check_rule_log_acc",
+		"name" : "qltt_check_rule_log_acc",
+		"platform" : "di động",
+		"updated_date" : "20240502"
+	},
+	{
+		"id" : 100,
+		"created_date" : "20240516",
+		"description" : "f_merchant_location_chungcu",
+		"name" : "f_merchant_location_chungcu",
+		"platform" : "di động",
+		"updated_date" : "20240516"
+	},
+	{
+		"id" : 101,
+		"created_date" : "20240531",
+		"description" : "f_ccai_happycall_contact_cust",
+		"name" : "f_ccai_happycall_contact_cust",
+		"platform" : "di động",
+		"updated_date" : "20240531"
+	},
+	{
+		"id" : 104,
+		"created_date" : "20240531",
+		"description" : "f_ccai_comunication_month",
+		"name" : "f_ccai_comunication_month",
+		"platform" : "di động",
+		"updated_date" : "20240531"
+	},
+	{
+		"id" : 107,
+		"created_date" : "20240531",
+		"description" : "f_ccai_happycall_customer_data",
+		"name" : "f_ccai_happycall_customer_data",
+		"platform" : "di động",
+		"updated_date" : "20240531"
+	},
+	{
+		"id" : 109,
+		"created_date" : "20240619",
+		"description" : "f_merchant_isdn_campaign_all",
+		"name" : "f_merchant_isdn_campaign_all",
+		"platform" : "di động",
+		"updated_date" : "20240619"
+	},
+	{
+		"id" : 112,
+		"created_date" : "20240726",
+		"description" : "tong_cuoc",
+		"name" : "tong_cuoc",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 115,
+		"created_date" : "20240726",
+		"description" : "telecom_service_name",
+		"name" : "telecom_service_name",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 118,
+		"created_date" : "20240726",
+		"description" : "is_attach",
+		"name" : "is_attach",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 121,
+		"created_date" : "20240726",
+		"description" : "is_dcom",
+		"name" : "is_dcom",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 124,
+		"created_date" : "20240726",
+		"description" : "act_status",
+		"name" : "act_status",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 127,
+		"created_date" : "20240726",
+		"description" : "is_install",
+		"name" : "is_install",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 130,
+		"created_date" : "20240726",
+		"description" : "ngay_ketthuc_dct",
+		"name" : "ngay_ketthuc_dct",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 133,
+		"created_date" : "20240726",
+		"description" : "score_buy_kplus_active_user",
+		"name" : "score_buy_kplus_active_user",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 136,
+		"created_date" : "20240726",
+		"description" : "score_tvshow",
+		"name" : "score_tvshow",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 139,
+		"created_date" : "20240726",
+		"description" : "p_ftth_churn_safe",
+		"name" : "p_ftth_churn_safe",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 142,
+		"created_date" : "20240726",
+		"description" : "max_tin",
+		"name" : "max_tin",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 145,
+		"created_date" : "20240726",
+		"description" : "combination",
+		"name" : "combination",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 148,
+		"created_date" : "20240726",
+		"description" : "os_name_ext",
+		"name" : "os_name_ext",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 151,
+		"created_date" : "20240726",
+		"description" : "brand_ext",
+		"name" : "brand_ext",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 154,
+		"created_date" : "20240726",
+		"description" : "user_traphi_n_2",
+		"name" : "user_traphi_n_2",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 157,
+		"created_date" : "20240726",
+		"description" : "age_tb",
+		"name" : "age_tb",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 160,
+		"created_date" : "20240726",
+		"description" : "partition",
+		"name" : "partition",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 163,
+		"created_date" : "20240726",
+		"description" : "goi_cuoc",
+		"name" : "goi_cuoc",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 166,
+		"created_date" : "20240726",
+		"description" : "service",
+		"name" : "service",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 169,
+		"created_date" : "20240726",
+		"description" : "lv_area",
+		"name" : "lv_area",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 172,
+		"created_date" : "20240726",
+		"description" : "flag_login_n1",
+		"name" : "flag_login_n1",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 175,
+		"created_date" : "20240726",
+		"description" : "tong_ll_gprs",
+		"name" : "tong_ll_gprs",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 178,
+		"created_date" : "20240726",
+		"description" : "bq_tieu_dung_3_mon",
+		"name" : "bq_tieu_dung_3_mon",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 181,
+		"created_date" : "20240726",
+		"description" : "flag_buy_combo_cycle_mon_n",
+		"name" : "flag_buy_combo_cycle_mon_n",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 184,
+		"created_date" : "20240726",
+		"description" : "flag_buy_combo_cycle_day_n",
+		"name" : "flag_buy_combo_cycle_day_n",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	},
+	{
+		"id" : 187,
+		"created_date" : "20240726",
+		"description" : "is_active_n",
+		"name" : "is_active_n",
+		"platform" : "di động",
+		"updated_date" : "20240726"
+	}
+]}

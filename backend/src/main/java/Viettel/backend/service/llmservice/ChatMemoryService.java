@@ -1,0 +1,238 @@
+package Viettel.backend.service.llmservice;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.AbstractTransaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+
+/**
+ * Service for managing chat memory, including session metadata and chat history.
+ */
+@Service
+public class ChatMemoryService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChatMemoryService.class);
+
+    // Distinct prefixes for metadata and chat history
+    private static final String SESSION_METADATA_PREFIX = "session:metadata:";
+    private static final String CHAT_HISTORY_PREFIX = "session:chat:";
+
+    // Expiration times in seconds
+    private static final int METADATA_EXPIRATION = 24 * 3600; // 24 hours
+    private static final int CHAT_HISTORY_EXPIRATION = 7 * 24 * 3600; // 7 days
+
+    private final JedisPooled jedisPooled;
+
+    /**
+     * Constructor for dependency injection.
+     *
+     * @param jedisPooled the JedisPooled instance for Redis operations
+     */
+    @Autowired
+    public ChatMemoryService(JedisPooled jedisPooled) {
+        this.jedisPooled = jedisPooled;
+    }
+
+    /**
+     * Stores session metadata in Redis.
+     *
+     * @param sessionId the unique identifier for the session
+     * @param metadata  a map of metadata key-value pairs
+     */
+    public void storeSessionMetadata(String sessionId, Map<String, String> metadata) {
+        if (!isValidSessionId(sessionId) || metadata == null) {
+            logger.warn("Invalid sessionId or metadata provided for storing session metadata.");
+            return;
+        }
+
+        String redisKey = SESSION_METADATA_PREFIX + sessionId;
+        try {
+            // Use AbstractTransaction to ensure compatibility with Jedis 5.1.5
+            AbstractTransaction transaction = jedisPooled.multi();
+            transaction.hset(redisKey, metadata);
+            transaction.expire(redisKey, METADATA_EXPIRATION);
+            transaction.exec();
+
+            logger.info("Stored session metadata for sessionId: {}", maskSessionId(sessionId));
+        } catch (JedisException e) {
+            logger.error("Failed to store session metadata for sessionId: {}", maskSessionId(sessionId), e);
+            // Implement retry logic or other error handling as needed
+        }
+    }
+
+    /**
+     * Stores a user chat message in Redis.
+     *
+     * @param sessionId the unique identifier for the session
+     * @param userType  the type of user (e.g., "user", "assistant")
+     * @param message   the chat message content
+     */
+    public void storeUserChat(String sessionId, String userType, String message) {
+        if (!isValidSessionId(sessionId) || !isValidUserType(userType) || !isValidMessage(message)) {
+            logger.warn("Invalid input provided for storing user chat.");
+            return;
+        }
+
+        String redisKey = CHAT_HISTORY_PREFIX + sessionId;
+        String formattedMessage = formatMessage(userType, message);
+        try {
+            // Use AbstractTransaction to ensure compatibility with Jedis 5.1.5
+            AbstractTransaction transaction = jedisPooled.multi();
+            transaction.rpush(redisKey, formattedMessage);
+            transaction.expire(redisKey, CHAT_HISTORY_EXPIRATION);
+            transaction.exec();
+
+            logger.debug("Stored chat message for sessionId: {}, userType: {}", maskSessionId(sessionId), userType);
+        } catch (JedisException e) {
+            logger.error("Failed to store chat message for sessionId: {}, userType: {}", maskSessionId(sessionId), userType, e);
+            // Implement retry logic or other error handling as needed
+        }
+    }
+
+    /**
+     * Retrieves session metadata from Redis.
+     *
+     * @param sessionId the unique identifier for the session
+     * @return a map of metadata key-value pairs, or an empty map if not found or on error
+     */
+    public Map<String, String> getSessionMetadata(String sessionId) {
+        if (!isValidSessionId(sessionId)) {
+            logger.warn("Invalid sessionId provided for retrieving session metadata.");
+            return new HashMap<>();
+        }
+
+        String redisKey = SESSION_METADATA_PREFIX + sessionId;
+        try {
+            Map<String, String> metadata = jedisPooled.hgetAll(redisKey);
+            if (metadata == null || metadata.isEmpty()) {
+                logger.info("No session metadata found for sessionId: {}", maskSessionId(sessionId));
+                return new HashMap<>();
+            }
+            return metadata;
+        } catch (JedisException e) {
+            logger.error("Failed to retrieve session metadata for sessionId: {}", maskSessionId(sessionId), e);
+            return new HashMap<>();
+        }
+    }
+
+    /**
+     * Retrieves user chat history from Redis.
+     *
+     * @param sessionId the unique identifier for the session
+     * @return a list of formatted chat messages, or an empty list if not found or on error
+     */
+    public List<String> getUserChat(String sessionId) {
+        if (!isValidSessionId(sessionId)) {
+            logger.warn("Invalid sessionId provided for retrieving user chat.");
+            return new ArrayList<>();
+        }
+
+        String redisKey = CHAT_HISTORY_PREFIX + sessionId;
+        try {
+            List<String> chatHistory = jedisPooled.lrange(redisKey, 0, -1);
+            if (chatHistory == null || chatHistory.isEmpty()) {
+                logger.info("No chat history found for sessionId: {}", maskSessionId(sessionId));
+                return new ArrayList<>();
+            }
+            return chatHistory;
+        } catch (JedisException e) {
+            logger.error("Failed to retrieve chat history for sessionId: {}", maskSessionId(sessionId), e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Initializes a new session with metadata and sets the appropriate expirations.
+     * This method should be called once when a new session is created.
+     *
+     * @param sessionId the unique identifier for the session
+     * @param metadata  a map of metadata key-value pairs
+     */
+    public void initializeSession(String sessionId, Map<String, String> metadata) {
+        if (!isValidSessionId(sessionId) || metadata == null) {
+            logger.warn("Invalid sessionId or metadata provided for initializing session.");
+            return;
+        }
+
+        String metadataKey = SESSION_METADATA_PREFIX + sessionId;
+        String chatKey = CHAT_HISTORY_PREFIX + sessionId;
+        try {
+            // Use AbstractTransaction to ensure compatibility with Jedis 5.1.5
+            AbstractTransaction transaction = jedisPooled.multi();
+            transaction.hset(metadataKey, metadata);
+            transaction.expire(metadataKey, METADATA_EXPIRATION);
+            transaction.expire(chatKey, CHAT_HISTORY_EXPIRATION);
+            transaction.exec();
+
+            logger.info("Initialized new session with sessionId: {}", maskSessionId(sessionId));
+        } catch (JedisException e) {
+            logger.error("Failed to initialize session with sessionId: {}", maskSessionId(sessionId), e);
+            // Implement retry logic or other error handling as needed
+        }
+    }
+
+    /**
+     * Formats a chat message with user type and timestamp.
+     *
+     * @param userType the type of user
+     * @param message  the chat message content
+     * @return a formatted string containing user type, timestamp, and message
+     */
+    private String formatMessage(String userType, String message) {
+        long timestamp = System.currentTimeMillis();
+        // Example format: "user:1638316800000:Hello, how are you?"
+        return String.format("%s:%d:%s", userType, timestamp, message);
+    }
+
+    /**
+     * Validates the session ID.
+     *
+     * @param sessionId the session ID to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidSessionId(String sessionId) {
+        return sessionId != null && !sessionId.trim().isEmpty();
+    }
+
+    /**
+     * Validates the user type.
+     *
+     * @param userType the user type to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidUserType(String userType) {
+        return userType != null && (userType.equals("user") || userType.equals("assistant"));
+    }
+
+    /**
+     * Validates the message content.
+     *
+     * @param message the message to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidMessage(String message) {
+        return message != null && !message.trim().isEmpty();
+    }
+
+    /**
+     * Masks the session ID for logging to prevent exposing sensitive information.
+     *
+     * @param sessionId the original session ID
+     * @return a masked version of the session ID
+     */
+    private String maskSessionId(String sessionId) {
+        if (sessionId.length() <= 4) {
+            return "****";
+        }
+        String visiblePart = sessionId.substring(sessionId.length() - 4);
+        return "****" + visiblePart;
+    }
+}

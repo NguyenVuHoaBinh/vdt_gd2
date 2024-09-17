@@ -16,6 +16,7 @@ import { DocsExample } from 'src/components'
 import MySQLImg from 'src/assets/images/MySQL.jpg'
 import MsSQLImg from 'src/assets/images/MsSQL.png'
 import PostgreSQLImg from 'src/assets/images/postgresql.jpeg'
+import JSONImg from 'src/assets/images/Json.png'
 
 
 
@@ -59,6 +60,20 @@ const Toolpage = () => {
                 <CButton color="primary" href="http://localhost:3000/#/NLP2MSSQL">Use</CButton>
             </CCardBody>
             </CCard>
+
+            <CCard style={{ width: '18rem' }}>
+            <CCardImage orientation="top" src={JSONImg} />
+            <CCardBody>
+                <CCardTitle>NLP to JSON-SCHEMA Query</CCardTitle>
+                <CCardText>
+                    Quickly generate SQL based on JSON-SCHEMA.
+                </CCardText>
+                <CButton color="primary" href="http://localhost:3000/#/NLP2JSONSchema">Use</CButton>
+            </CCardBody>
+            </CCard>
+
+
+
         </CRow>
         
         
