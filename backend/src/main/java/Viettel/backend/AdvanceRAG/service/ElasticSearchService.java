@@ -2,11 +2,7 @@
 
 package Viettel.backend.AdvanceRAG.service;
 
-import Viettel.backend.AdvanceRAG.model.DocumentWithEmbedding;
-import Viettel.backend.AdvanceRAG.model.SchemaDocument;
 import Viettel.backend.service.llmservice.EmbeddingService;
-import Viettel.backend.service.textextractor.TextExtractor;
-import Viettel.backend.service.textextractor.TextExtractorFactory;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;

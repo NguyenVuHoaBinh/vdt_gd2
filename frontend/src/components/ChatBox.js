@@ -9,36 +9,33 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { FaMicrophone } from 'react-icons/fa';
 
-const ChatBox = ({ model, modelType, sessionId, connected }) => {
+const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }) => {
   const systemRole = `
   You are working with a database that contains the following tables and their respective fields, your task is to generate the correct sql command. Follow these instructions:
 
 1. **Schema Overview:**
    - Use only the tables and fields specified in the schema below.
-   - If the query request involves tables or fields that are not listed in the schema, return: "No suitable request."
+   - The query request may involve words related to the tables or fields, so if they are similar then use them.
+    Example:
+      Query: day active mon
+      Schema: {"Field":"day_active_mon_n1","Type":"TEXT"},{"Field":"day_active_mon_n","Type":"TEXT"},{"Field":"watch_film_duration_mon_n","Type":"TEXT"},{"Field":"watch_film_duration_mon_n1","Type":"TEXT"},{"Field":"watch_film_duration_mon_n2","Type":"TEXT"}]},
+      then select day_active_mon_n, day_active_mon_n1
+   - If the query request involves tables or fields that are not listed in the schema, return: "No suitable request, entity is not found in the given schema."
 
 2. **Query Construction:**
    - Parse the user request and determine the tables and fields involved.
    - Verify that all mentioned tables and fields exist in the given schema.
    - If all specified tables and fields are found in the schema, generate the SQL query.
-   - If any table or field in the request is not present in the schema, return: "No suitable request."
-
+   - If any table or field in the request is not present in the schema, return: "No suitable request, entity is not found in the given schema."
 
 **Remember:** Your output must strictly adhere to the schema. If the request cannot be fulfilled with the given schema, return "No suitable request."
 Below is the schema for reference:
-  `
-  
-  const [chatLog, setChatLog] = useState([]);
-  const [inputValue, setInputValue] = useState(''); // State for input field
+  `;
+
+  const [inputValue, setInputValue] = useState('');
   const chatRef = useRef(null);
 
-  const {
-    startRecording,
-    stopRecording,
-    mediaBlobUrl,
-    status,
-    clearBlobUrl,
-  } = useReactMediaRecorder({
+  const { startRecording, stopRecording, mediaBlobUrl, status, clearBlobUrl } = useReactMediaRecorder({
     audio: true,
   });
 
@@ -50,9 +47,7 @@ Below is the schema for reference:
     const headerRow = headers.map((header) => `<th>${header}</th>`).join('');
     const rows = data
       .map((row) => {
-        const rowData = headers
-          .map((header) => `<td>${row[header]}</td>`)
-          .join('');
+        const rowData = headers.map((header) => `<td>${row[header]}</td>`).join('');
         return `<tr>${rowData}</tr>`;
       })
       .join('');
@@ -70,9 +65,10 @@ Below is the schema for reference:
         return;
       }
 
+      // Update the chat log using setChatLog passed from the parent component
       const newChatLog = [...chatLog, { user: 'user', text: message }];
       setChatLog(newChatLog);
-      setInputValue(''); // Clear the input field after sending
+      setInputValue('');
 
       try {
         if (modelType === 'api') {
@@ -81,13 +77,14 @@ Below is the schema for reference:
           await callMlflowEndpoint(message, model);
         }
       } catch (error) {
+        console.error('Error fetching response:', error);
         setChatLog((prevChatLog) => [
           ...prevChatLog,
           { user: 'bot', text: 'Error fetching response' },
         ]);
       }
     },
-    [chatLog, model, modelType, sessionId, connected]
+    [chatLog, model, modelType, sessionId, connected, setChatLog] // Ensure all dependencies are included
   );
 
   const callApiEndpoint = async (message, model) => {
@@ -97,20 +94,30 @@ Below is the schema for reference:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, model, sessionId, systemRole }),
       });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
 
-      const table = generateTable(result.queryResult);
+      const messages = [];
 
-      const messages = [
-        { text: result.fullResponse, user: 'bot' },
-        {
+      if (result.fullResponse?.trim()) {
+        messages.push({ text: result.fullResponse, user: 'bot' });
+      }
+
+      if (result.sqlQuery?.trim()) {
+        messages.push({
           text: `**SQL Query:**\n\`\`\`sql\n${result.sqlQuery}\n\`\`\``,
           user: 'bot',
-        },
-        { text: `**Result:**\n${table}`, user: 'bot' },
-      ];
+        });
+      }
+
+      if (Array.isArray(result.queryResult) && result.queryResult.length > 0) {
+        const table = generateTable(result.queryResult);
+        messages.push({ text: `**Result:**\n${table}`, user: 'bot' });
+      }
 
       addMessagesWithDelay(messages, 1000);
+
     } catch (error) {
       console.error('Error with API models:', error);
       setChatLog((prevChatLog) => [
@@ -120,7 +127,6 @@ Below is the schema for reference:
     }
   };
 
-  // Add messages with delay for a better UX
   const addMessagesWithDelay = (messages, delay) => {
     messages.forEach((message, index) => {
       setTimeout(() => {
@@ -129,26 +135,22 @@ Below is the schema for reference:
     });
   };
 
-  // Send recorded audio to backend and handle transcript
   const sendAudioToBackend = async (blobUrl) => {
     try {
-      const response = await fetch(blobUrl); // Fetch the recorded audio blob from the URL
+      const response = await fetch(blobUrl);
       const audioBlob = await response.blob();
-
-      // Create a FormData object and append the audio file
       const formData = new FormData();
       formData.append('file', audioBlob, 'audio.wav');
 
-      // Send the POST request to your backend server
       const result = await fetch('https://localhost:8888/process-audio', {
         method: 'POST',
         body: formData,
       });
 
       const data = await result.json();
+
       if (result.ok) {
         const transcribedText = data.transcription;
-        // Instead of adding to chat log, set the input value
         setInputValue(transcribedText);
       } else {
         console.error('Error from backend:', data);
@@ -164,12 +166,11 @@ Below is the schema for reference:
         { user: 'bot', text: 'Error sending audio to backend' },
       ]);
     } finally {
-      // Clear the recorded audio URL after processing
       clearBlobUrl();
     }
   };
 
-  // Scroll to the bottom of the chat when new messages are added
+  // Scroll to the bottom whenever chatLog updates
   useEffect(() => {
     chatRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatLog]);
@@ -183,16 +184,14 @@ Below is the schema for reference:
             key={index}
             style={{
               display: 'flex',
-              justifyContent:
-                entry.user === 'user' ? 'flex-end' : 'flex-start',
+              justifyContent: entry.user === 'user' ? 'flex-end' : 'flex-start',
             }}
           >
             <div
               style={{
                 maxWidth: '80%',
                 padding: '10px',
-                background:
-                  entry.user === 'user' ? '#d1e7dd' : '#f8d7da',
+                background: entry.user === 'user' ? '#d1e7dd' : '#f8d7da',
                 borderRadius: '10px',
               }}
             >
@@ -200,21 +199,10 @@ Below is the schema for reference:
                 rehypePlugins={[rehypeRaw]}
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  code({
-                    node,
-                    inline,
-                    className,
-                    children,
-                    ...props
-                  }) {
+                  code({ node, inline, className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || '');
                     return !inline && match ? (
-                      <SyntaxHighlighter
-                        {...props}
-                        style={materialDark}
-                        language={match[1]}
-                        PreTag="div"
-                      >
+                      <SyntaxHighlighter {...props} style={materialDark} language={match[1]} PreTag="div">
                         {String(children).replace(/\n$/, '')}
                       </SyntaxHighlighter>
                     ) : (
@@ -243,18 +231,17 @@ Below is the schema for reference:
               <ChatButton
                 text="Send"
                 onClick={() => {
-                  if (inputValue.trim() !== '') {
+                  if (inputValue.trim()) {
                     handleChatSubmit(inputValue);
                   }
                 }}
               />
-              {/* Microphone button for voice recording */}
               <FaMicrophone
                 onClick={() => {
                   if (status === 'recording') {
-                    stopRecording(); // Stop recording if already in progress
+                    stopRecording();
                   } else {
-                    startRecording(); // Start recording if not already in progress
+                    startRecording();
                   }
                 }}
                 style={{
@@ -269,19 +256,11 @@ Below is the schema for reference:
         />
       </div>
 
-      {/* If recording is complete, show the audio player and send the audio to backend */}
       {mediaBlobUrl && (
         <div style={{ marginTop: '10px' }}>
           <audio src={mediaBlobUrl} controls />
-          <ChatButton
-            text="Send Audio"
-            onClick={() => sendAudioToBackend(mediaBlobUrl)}
-          />
-          <ChatButton
-            text="Discard"
-            onClick={() => clearBlobUrl()}
-            style={{ marginLeft: '10px' }}
-          />
+          <ChatButton text="Send Audio" onClick={() => sendAudioToBackend(mediaBlobUrl)} />
+          <ChatButton text="Discard" onClick={() => clearBlobUrl()} style={{ marginLeft: '10px' }} />
         </div>
       )}
     </div>

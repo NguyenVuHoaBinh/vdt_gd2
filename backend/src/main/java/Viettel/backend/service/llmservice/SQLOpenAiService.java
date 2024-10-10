@@ -51,11 +51,11 @@ public class SQLOpenAiService implements LLMServiceInterface {
                 Map<String, Object> messageMap = (Map<String, Object>) firstChoice.get("message");
                 String fullResponse = (String) messageMap.get("content");
 
-                String sqlQuery = extractSQLQuery(fullResponse);
+                //String sqlQuery = extractSQLQuery(fullResponse);
 
                 Map<String, String> result = new HashMap<>();
                 result.put("fullResponse", fullResponse);
-                result.put("sqlQuery", sqlQuery);
+                result.put("sqlQuery", fullResponse);
                 return result;
             }
         } else {
@@ -149,6 +149,46 @@ public class SQLOpenAiService implements LLMServiceInterface {
         String role = "";
         try {
             String filePath = "src/main/resources/static/refiningQuery.txt"; // Update with the correct path to your file
+            role = new String(Files.readAllBytes(Paths.get(filePath)));
+            System.out.println(role);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String url = "https://api.openai.com/v1/chat/completions";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-3.5-turbo");
+        requestBody.put("messages", List.of(
+                Map.of("role", "system", "content", role),
+                Map.of("role", "user", "content", message)
+        ));
+        requestBody.put("max_tokens", 200);
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
+            if (choices != null && !choices.isEmpty()) {
+                Map<String, Object> firstChoice = choices.get(0);
+                Map<String, Object> messageMap = (Map<String, Object>) firstChoice.get("message");
+                String analysisResult = (String) messageMap.get("content");
+
+
+                return analysisResult;
+            }
+        } else {
+            throw new RuntimeException("Failed to get response from OpenAI");
+        }
+        return null;
+    }
+
+    @Override
+    public String errorSolver(String message) {
+        String role = "";
+        try {
+            String filePath = "src/main/resources/static/errorSolver.txt"; // Update with the correct path to your file
             role = new String(Files.readAllBytes(Paths.get(filePath)));
             System.out.println(role);
         } catch (Exception e) {

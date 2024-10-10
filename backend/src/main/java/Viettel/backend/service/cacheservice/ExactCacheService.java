@@ -38,14 +38,17 @@ public class ExactCacheService {
     public void init() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(this::cleanUpHitCounts, 1, 1, TimeUnit.HOURS);
+        logger.info("Scheduled hit count cleanup task initialized.");
     }
 
     /**
      * Cleans up hit counts for queries with low access frequency.
      */
     private void cleanUpHitCounts() {
+        int initialSize = queryHitCounts.size();
         queryHitCounts.entrySet().removeIf(entry -> entry.getValue() < 5);
-        logger.debug("Cleaned up hit counts for low-frequency queries.");
+        int cleanedSize = initialSize - queryHitCounts.size();
+        logger.debug("Cleaned up {} low-frequency query hit counts.", cleanedSize);
     }
 
     /**
@@ -56,7 +59,7 @@ public class ExactCacheService {
      */
     public void cacheExactResponse(String query, String response) {
         if (!isValidQuery(query) || !isValidResponse(response)) {
-            logger.warn("Invalid query or response provided for caching.");
+            logger.warn("Invalid query or response provided for caching. Query: {}", maskQuery(query));
             return;
         }
 
@@ -69,7 +72,7 @@ public class ExactCacheService {
         int ttl = determineTTL(query);
         try {
             jedisPooled.setex(cacheKey, ttl, response);
-            logger.info("Cached exact response for query: {}", maskQuery(query));
+            logger.info("Cached exact response for query: {} with TTL: {} seconds", maskQuery(query), ttl);
         } catch (Exception e) {
             logger.error("Failed to cache response for query: {}", maskQuery(query), e);
         }
@@ -83,7 +86,7 @@ public class ExactCacheService {
      */
     public String getExactCachedResponse(String query) {
         if (!isValidQuery(query)) {
-            logger.warn("Invalid query provided for cache retrieval.");
+            logger.warn("Invalid query provided for cache retrieval. Query: {}", maskQuery(query));
             return null;
         }
 
@@ -115,7 +118,7 @@ public class ExactCacheService {
      */
     public void invalidateCacheForQuery(String query) {
         if (!isValidQuery(query)) {
-            logger.warn("Invalid query provided for cache invalidation.");
+            logger.warn("Invalid query provided for cache invalidation. Query: {}", maskQuery(query));
             return;
         }
 
@@ -142,13 +145,10 @@ public class ExactCacheService {
      */
     private int determineTTL(String query) {
         int hits = queryHitCounts.getOrDefault(query, 0);
-        if (hits > 10) {
-            return DEFAULT_TTL_LONG; // 2 hours for frequently accessed queries
-        } else if (query.length() < 50) {
-            return DEFAULT_TTL_SHORT; // 30 minutes for short queries
-        } else {
-            return DEFAULT_TTL_MEDIUM; // 1 hour for other queries
-        }
+        int ttl = (hits > 10) ? DEFAULT_TTL_LONG :
+                (query.length() < 50) ? DEFAULT_TTL_SHORT : DEFAULT_TTL_MEDIUM;
+        logger.debug("Determined TTL: {} seconds for query: {} with hit count: {}", ttl, maskQuery(query), hits);
+        return ttl;
     }
 
     /**
@@ -158,6 +158,7 @@ public class ExactCacheService {
      */
     private void incrementHitCount(String query) {
         queryHitCounts.merge(query, 1, Integer::sum);
+        logger.debug("Incremented hit count for query: {}. Current count: {}", maskQuery(query), queryHitCounts.get(query));
     }
 
     /**
@@ -179,7 +180,11 @@ public class ExactCacheService {
      * @return true if valid; otherwise, false
      */
     private boolean isValidCacheKey(String cacheKey) {
-        return cacheKey != null && cacheKey.length() <= 256; // Example limit
+        boolean isValid = cacheKey != null && cacheKey.length() <= 256; // Example limit
+        if (!isValid) {
+            logger.warn("Cache key validation failed for: {}", cacheKey);
+        }
+        return isValid;
     }
 
     /**

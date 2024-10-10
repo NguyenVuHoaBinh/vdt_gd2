@@ -9,6 +9,7 @@ const NLP2MySQL = React.lazy(()=> import('./components/nlp2mysql/NLP2MySQL'))
 const NLP2MSSQL = React.lazy(()=> import('./components/nlp2mssql/NLP2MSSQL'))
 const NLP2PostGreSQL = React.lazy(()=> import('./components/nlp2postgresql/NLP2PostGreSQL'))
 const NLP2JSONSchema = React.lazy(()=> import('./components/nlp2jsonschema/NLP2JSONSchema'))
+const LangGraphWorkflow = React.lazy(()=> import('./components/LangGraphWorkflow'))
 
 
 

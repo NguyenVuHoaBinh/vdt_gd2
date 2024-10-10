@@ -49,22 +49,20 @@ public class ChatMemoryService {
      */
     public void storeSessionMetadata(String sessionId, Map<String, String> metadata) {
         if (!isValidSessionId(sessionId) || metadata == null) {
-            logger.warn("Invalid sessionId or metadata provided for storing session metadata.");
+            logger.warn("Invalid sessionId or metadata provided for storing session metadata. sessionId: {}", maskSessionId(sessionId));
             return;
         }
 
         String redisKey = SESSION_METADATA_PREFIX + sessionId;
         try {
-            // Use AbstractTransaction to ensure compatibility with Jedis 5.1.5
+            logger.debug("Storing session metadata for sessionId: {}, redisKey: {}", maskSessionId(sessionId), redisKey);
             AbstractTransaction transaction = jedisPooled.multi();
             transaction.hset(redisKey, metadata);
             transaction.expire(redisKey, METADATA_EXPIRATION);
             transaction.exec();
-
             logger.info("Stored session metadata for sessionId: {}", maskSessionId(sessionId));
         } catch (JedisException e) {
             logger.error("Failed to store session metadata for sessionId: {}", maskSessionId(sessionId), e);
-            // Implement retry logic or other error handling as needed
         }
     }
 
@@ -77,23 +75,21 @@ public class ChatMemoryService {
      */
     public void storeUserChat(String sessionId, String userType, String message) {
         if (!isValidSessionId(sessionId) || !isValidUserType(userType) || !isValidMessage(message)) {
-            logger.warn("Invalid input provided for storing user chat.");
+            logger.warn("Invalid input provided for storing user chat. sessionId: {}, userType: {}", maskSessionId(sessionId), userType);
             return;
         }
 
         String redisKey = CHAT_HISTORY_PREFIX + sessionId;
         String formattedMessage = formatMessage(userType, message);
         try {
-            // Use AbstractTransaction to ensure compatibility with Jedis 5.1.5
+            logger.debug("Storing chat message for sessionId: {}, userType: {}, redisKey: {}", maskSessionId(sessionId), userType, redisKey);
             AbstractTransaction transaction = jedisPooled.multi();
             transaction.rpush(redisKey, formattedMessage);
             transaction.expire(redisKey, CHAT_HISTORY_EXPIRATION);
             transaction.exec();
-
-            logger.debug("Stored chat message for sessionId: {}, userType: {}", maskSessionId(sessionId), userType);
+            logger.info("Stored chat message for sessionId: {}, userType: {}", maskSessionId(sessionId), userType);
         } catch (JedisException e) {
             logger.error("Failed to store chat message for sessionId: {}, userType: {}", maskSessionId(sessionId), userType, e);
-            // Implement retry logic or other error handling as needed
         }
     }
 
@@ -105,12 +101,13 @@ public class ChatMemoryService {
      */
     public Map<String, String> getSessionMetadata(String sessionId) {
         if (!isValidSessionId(sessionId)) {
-            logger.warn("Invalid sessionId provided for retrieving session metadata.");
+            logger.warn("Invalid sessionId provided for retrieving session metadata. sessionId: {}", maskSessionId(sessionId));
             return new HashMap<>();
         }
 
         String redisKey = SESSION_METADATA_PREFIX + sessionId;
         try {
+            logger.debug("Retrieving session metadata for sessionId: {}, redisKey: {}", maskSessionId(sessionId), redisKey);
             Map<String, String> metadata = jedisPooled.hgetAll(redisKey);
             if (metadata == null || metadata.isEmpty()) {
                 logger.info("No session metadata found for sessionId: {}", maskSessionId(sessionId));
@@ -131,12 +128,13 @@ public class ChatMemoryService {
      */
     public List<String> getUserChat(String sessionId) {
         if (!isValidSessionId(sessionId)) {
-            logger.warn("Invalid sessionId provided for retrieving user chat.");
+            logger.warn("Invalid sessionId provided for retrieving user chat. sessionId: {}", maskSessionId(sessionId));
             return new ArrayList<>();
         }
 
         String redisKey = CHAT_HISTORY_PREFIX + sessionId;
         try {
+            logger.debug("Retrieving chat history for sessionId: {}, redisKey: {}", maskSessionId(sessionId), redisKey);
             List<String> chatHistory = jedisPooled.lrange(redisKey, 0, -1);
             if (chatHistory == null || chatHistory.isEmpty()) {
                 logger.info("No chat history found for sessionId: {}", maskSessionId(sessionId));
@@ -158,24 +156,22 @@ public class ChatMemoryService {
      */
     public void initializeSession(String sessionId, Map<String, String> metadata) {
         if (!isValidSessionId(sessionId) || metadata == null) {
-            logger.warn("Invalid sessionId or metadata provided for initializing session.");
+            logger.warn("Invalid sessionId or metadata provided for initializing session. sessionId: {}", maskSessionId(sessionId));
             return;
         }
 
         String metadataKey = SESSION_METADATA_PREFIX + sessionId;
         String chatKey = CHAT_HISTORY_PREFIX + sessionId;
         try {
-            // Use AbstractTransaction to ensure compatibility with Jedis 5.1.5
+            logger.debug("Initializing session for sessionId: {}, metadataKey: {}, chatKey: {}", maskSessionId(sessionId), metadataKey, chatKey);
             AbstractTransaction transaction = jedisPooled.multi();
             transaction.hset(metadataKey, metadata);
             transaction.expire(metadataKey, METADATA_EXPIRATION);
             transaction.expire(chatKey, CHAT_HISTORY_EXPIRATION);
             transaction.exec();
-
             logger.info("Initialized new session with sessionId: {}", maskSessionId(sessionId));
         } catch (JedisException e) {
             logger.error("Failed to initialize session with sessionId: {}", maskSessionId(sessionId), e);
-            // Implement retry logic or other error handling as needed
         }
     }
 

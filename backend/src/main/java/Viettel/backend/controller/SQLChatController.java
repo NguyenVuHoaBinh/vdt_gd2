@@ -1,7 +1,6 @@
 package Viettel.backend.controller;
 
 import Viettel.backend.AdvanceRAG.service.Chunker;
-import Viettel.backend.AdvanceRAG.service.LLMService_advanceRAG;
 import Viettel.backend.AdvanceRAG.service.OpenAIEmbeddingService;
 import Viettel.backend.AdvanceRAG.service.SearchService;
 import Viettel.backend.config.databaseconfig.DatabaseConfig;
@@ -45,9 +44,6 @@ public class SQLChatController {
     private GraphQLService graphQLService;
 
     @Autowired
-    private LLMService_advanceRAG llmService_advanceRAG;
-
-    @Autowired
     private LLMService llmService;
 
     @Autowired
@@ -89,8 +85,11 @@ public class SQLChatController {
 
     private String indexName="";
 
+    //TODO: add memory to corrective schema entity
     @PostMapping("/connect")
     public Map<String, Object> connect(@RequestBody Map<String, String> dbParams) {
+        logger.info("Starting connection process for session ID: {}", dbParams.get("sessionId"));
+
         Map<String, Object> response = new HashMap<>();
         try {
             String sessionId = dbParams.get("sessionId");
@@ -99,85 +98,64 @@ public class SQLChatController {
             }
             indexName = sessionId;
 
+            logger.debug("Creating indices for session ID: {}", sessionId);
             indexService.createSchemaMetadataIndex(indexName);
             indexService.createChatIndex();
 
-            // Step 1: Create DataSource and set up JdbcTemplate
             DataSource dataSource = databaseConfig.createDataSource(dbParams);
             this.jdbcTemplate = new JdbcTemplate(dataSource);
-
-            // Step 2: Store DB parameters for later use
             dbParamsStore.putAll(dbParams);
 
-            // Step 3: Generate the ingestion configuration file
+            logger.debug("Generating ingestion configuration for session ID: {}", sessionId);
             dataHubIngestionService.generateIngestionConfig(dbParams);
 
-            // Step 4: Run the ingestion pipeline and capture the result
             DataHubIngestionService.IngestionResult ingestionResult = dataHubIngestionService.runIngestionPipeline();
             response.put("ingestionResult", ingestionResult);
 
-            // Step 5: Fetch metadata from the GraphQL service
             String metadata = graphQLService.fetchDatabaseSchema(dbParams.get("database"));
 
-            // Step 6: Prepare documents for chunking
             Map<String, Object> document = new HashMap<>();
             document.put("id", dbParams.get("database"));
             document.put("content", metadata);
             List<Map<String, Object>> documents = Collections.singletonList(document);
 
-            // Step 7: Chunk the documents
+            logger.debug("Chunking documents for session ID: {}", sessionId);
             int chunkSize = 512;
             int overlap = 50;
             int minChunkSize = 50;
             List<Map<String, Object>> chunkedDocuments = chunker.sentenceWiseTokenizedChunkDocuments(
                     documents, chunkSize, overlap, minChunkSize);
 
-            // Step 8: Collect all texts to embed
-            List<String> textsToEmbed = new ArrayList<>();
-            for (Map<String, Object> doc : chunkedDocuments) {
-                String textContent = (String) doc.get("original_text");
-                textsToEmbed.add(textContent);
-            }
+            List<String> textsToEmbed = chunkedDocuments.stream()
+                    .map(doc -> (String) doc.get("original_text"))
+                    .collect(Collectors.toList());
 
-            // Step 9: Generate embeddings in batch
             List<double[]> embeddings = embeddingService.getEmbeddings(textsToEmbed);
 
-            // Step 10: Assign embeddings back to chunked documents
             for (int i = 0; i < chunkedDocuments.size(); i++) {
                 chunkedDocuments.get(i).put("embedding", embeddings.get(i));
             }
 
-            // Step 11: Index the chunked documents into Elasticsearch
+            logger.debug("Indexing chunked documents into Elasticsearch for session ID: {}", sessionId);
             for (Map<String, Object> doc : chunkedDocuments) {
-                String id = (String) doc.get("id");
-                List<Integer> chunk = (List<Integer>) doc.get("chunk");
-
-                String originalText = (String) doc.get("original_text");
-                Integer chunkIndex = (Integer) doc.get("chunk_index");
-                String parentId = (String) doc.get("parent_id");
-                Integer chunkTokenCount = (Integer) doc.get("chunk_token_count");
-                double[] embedding = (double[]) doc.get("embedding"); // Use the embedding as double[]
-
-                // Create a MetadataDocument instance
                 MetadataDocument metadataDocument = new MetadataDocument();
-                metadataDocument.setId(id);
-                metadataDocument.setChunk(chunk);
-                metadataDocument.setOriginalText(originalText);
-                metadataDocument.setChunkIndex(chunkIndex);
-                metadataDocument.setParentId(parentId);
-                metadataDocument.setChunkTokenCount(chunkTokenCount);
-                metadataDocument.setEmbedding(embedding); // Set the embedding as double[]
+                metadataDocument.setId((String) doc.get("id"));
+                metadataDocument.setChunk((List<Integer>) doc.get("chunk"));
+                metadataDocument.setOriginalText((String) doc.get("original_text"));
+                metadataDocument.setChunkIndex((Integer) doc.get("chunk_index"));
+                metadataDocument.setParentId((String) doc.get("parent_id"));
+                metadataDocument.setChunkTokenCount((Integer) doc.get("chunk_token_count"));
+                metadataDocument.setEmbedding((double[]) doc.get("embedding"));
 
-                // Index the MetadataDocument into Elasticsearch
-                elasticsearchService.indexMetadataDocument(indexName, id, metadataDocument);
+                elasticsearchService.indexMetadataDocument(indexName, metadataDocument.getId(), metadataDocument);
             }
 
-            // Step 12: Set success response
             response.put("sessionId", sessionId);
             response.put("success", true);
+            logger.info("Connection process completed successfully for session ID: {}", sessionId);
 
         } catch (Exception e) {
-            logger.error("Connection failed", e);
+            logger.error("Connection failed for session ID: {}", dbParams.get("sessionId"), e);
             response.put("success", false);
             response.put("message", "Connection failed: " + e.getMessage());
         }
@@ -206,6 +184,21 @@ public class SQLChatController {
                 return result;
             }
 
+
+            String cachedResponse = exactCacheService.getExactCachedResponse(message);
+            if (cachedResponse != null) {
+                logger.info("Semantic cache hit, returning cached response.");
+                result.put("queryResult", cachedResponse);
+                return result;
+            }
+            // Check cache (optional)
+             String semnaticCachedResponse = semanticCacheService.performHybridSearch(message);
+             if (semnaticCachedResponse != null) {
+                 logger.info("Semantic cache hit, returning cached response.");
+                 result.put("fullResponse", semnaticCachedResponse);
+                 return result;
+             }
+
             // Retrieve previous chat history
             List<String> previousChats = chatMemoryService.getUserChat(sessionId);
             int maxMessages = 3; // Define a suitable limit
@@ -215,7 +208,6 @@ public class SQLChatController {
 
             StringBuilder conversationBuilder = new StringBuilder();
             for (String chatEntry : recentChats) {
-                // Assuming chat entries are formatted as "user:timestamp:message" or "assistant:timestamp:message"
                 String[] parts = chatEntry.split(":", 3);
                 if (parts.length == 3) {
                     String role = parts[0];
@@ -230,42 +222,15 @@ public class SQLChatController {
             String conversationHistory = conversationBuilder.toString();
             logger.debug("Conversation History:\n{}", conversationHistory);
 
-
-
-            // Check Exact Cache
-//            String cachedResponse = exactCacheService.getExactCachedResponse(message);
-//            if (cachedResponse != null) {
-//                logger.info("Exact cache hit, returning cached response.");
-//                result.put("queryResult", cachedResponse);
-//                // Store in chat history
-//                chatMemoryService.storeUserChat(sessionId, "user", message);
-//                chatMemoryService.storeUserChat(sessionId, "assistant", cachedResponse);
-//                return result;
-////            } else {
-////                // Check Semantic Cache
-////                cachedResponse = semanticCacheService.performHybridSearch(message);
-////                if (cachedResponse != null) {
-////                    logger.info("Semantic cache hit, returning cached response.");
-////                    result.put("queryResult", cachedResponse);
-////                    // Store in chat history
-////                    chatMemoryService.storeUserChat(sessionId, "user", message);
-////                    chatMemoryService.storeUserChat(sessionId, "assistant", cachedResponse);
-////                    return result;
-////                }
-//            }
-
-            // Retrieve and embed database schema
-            String combinedPrompt="";
             // Step 1: Generate refined query and HyDE document
-            String refinedQuery = llmService.generateRefinedQuery(message,model);
-            String hydeDocument = llmService.generateHyDE(message,model);
+            String refinedQuery = llmService.generateRefinedQuery(message, model);
 
             // Step 2: Generate embedding for the hypothetical document
-            double[] hydeEmbedding = embeddingService.getEmbedding(hydeDocument);
+            double[] hydeEmbedding = embeddingService.getEmbedding(refinedQuery);
 
             // Step 3: Perform hybrid search
             int numCandidates = 100;
-            int numResults = 20;
+            int numResults = 4;
 
             List<Map<String, Object>> searchResults = searchService.hybridSearch(
                     indexName, refinedQuery, hydeEmbedding, numCandidates, numResults);
@@ -281,56 +246,133 @@ public class SQLChatController {
             String context = contextBuilder.toString();
 
             // Combine system role, schema metadata, and user message to create an enhanced prompt
-            combinedPrompt = "\n\nConversation History:\n" + conversationHistory + (systemRole != null ? systemRole : "") +
-                    "\n\nSchema Metadata:\n" + context  +
+            String combinedPrompt = "\n\nConversation History:\n" + conversationHistory +
+                    (systemRole != null ? systemRole : "") +
+                    "\n\nSchema Metadata:\n" + context +
                     "\n\nUser Query:\n" + message;
 
             logger.info("Enhanced Prompt: \n{}", combinedPrompt);
 
+            // Initialize attempt counter
+            int maxAttempts = 3;
+            int attempt = 1;
+            boolean success = false;
+
             // Process the message with the LLM using the enhanced prompt
             Map<String, String> processedResult = llmService.processMessage(message, model, combinedPrompt);
-
-            String fullResponse = processedResult.get("fullResponse");
             String sqlQuery = processedResult.get("sqlQuery");
+            String fullResponse = processedResult.get("fullResponse");
 
-            result.put("fullResponse", fullResponse);
-            logger.info("Full Response: " + fullResponse);
+            // Check if the response indicates "No suitable request"
+            if ("No suitable request, entity is not found in the given schema.".equalsIgnoreCase(fullResponse.trim())) {
+                logger.info("No suitable entity found, searching for related fields in schema.");
 
-            // Execute the SQL query if available
-            if (sqlQuery != null && !sqlQuery.isEmpty()) {
-                logger.info("Extracted SQL Query: " + sqlQuery);
-                List<Map<String, Object>> queryResult = sqlExecutionService.executeQuery(sqlQuery, dbParams);
+                // Create a corrective prompt combining the original data
+                String schemaPrompt = String.format(
+                        """
+                                You are given the user query and schema that contain tables and fields, your job is to find any field name that related to the user query intention
+                                For example:
+                                
+                                User: "Give me all data about day active mon"
+                                Schema: "1\\",\\"Type\\":\\"TEXT\\"},{\\"Field\\":\\"day_active_mon_n\\",\\"Type\\":\\"DATE\\"},{\\"Field\\":\\"day_active_mon_n1\\",\\"Type\\":\\"TEXT\\"},{\\"Field\\":\\"phi_dk_data_phanbo_combo\\",\\"Type\\":\\"TEXT\\"}]},{\\"Table\\":\\"f_ccai_profile_telecom_mon\\",\\"Fields\\":[{\\"Field\\":\\"id\\",\\"Type\\":\\"INTEGER\\"},{\\"Field\\":\\"bq_cuoc_goc_6thang\\",\\"Type\\":\\"TEXT\\"}]},{\\"Table\\":\\"f_ccai_profile_telecom_month\\",\\"Fields\\":[{\\"Field\\":\\"id\\",\\"Type\\":\\"INTEGER\\"},{\\"Field\\":\\"tong_tieu_dung\\",\\"Type\\":\\"TEXT\\"},
+                                Response: You mean day_active_mon_n, day_active_mon_n1?
+                                
+                                If the field name existing in multiple table, please list also the table that the field name related to.
+                                
+                                For example:
+                                
+                                User: "Give me all data about day active mon"
+                                Schema: {"Table":"mb_pos_daily_new","Fields":[{"Field":"id","Type":"INTEGER"},{"Field":"tong_tieu_dung","Type":"TEXT"},{"Field":"ds_ctkm_potential_customer","Type":"TEXT"},{"Field":"goi_cuoc_data","Type":"TEXT"},{"Field":"ds_goi_addon","Type":"TEXT"}]},{"Table":"mb_pos_new","Fields":[{"Field":"id","Type":"INTEGER"},{"Field":"tong_tieu_dung","Type":"TEXT"}]}
+                                Response: You mean tong_tieu_dung in mb_pos_new or tong_tieu_dung in mb_pos_daily_new?
+                                
+                                START OF THE USER QUERY: '%s'
+                                
+                                START OF THE SCHEMA: 
+                                '%s'
+                                """,
+                        message,context
+                );
 
-                result.put("sqlQuery", sqlQuery);
-                result.put("queryResult", queryResult);
+                // Process the corrective prompt with the LLM
+                Map<String, String> correctedResult = llmService.processMessage(message, model, schemaPrompt);
 
-                // Convert queryResult to JSON String
-                ObjectMapper objectMapper = new ObjectMapper();
-                String queryResultJson = objectMapper.writeValueAsString(queryResult);
 
-                // Prepare data to store in Elasticsearch
-                Map<String, Object> dataToStore = new HashMap<>();
-                dataToStore.put("sessionID", sessionId);
-                dataToStore.put("message", message);
-                dataToStore.put("queryResult", queryResultJson);
-
-                elasticsearchService.indexChatDocument("chat_index", sessionId + "-chat", dataToStore);
-
-                // Cache the response in the semantic cache
-                semanticCacheService.cacheResponse(message, queryResultJson);
-                exactCacheService.cacheExactResponse(message,queryResultJson);
-
-                // Store assistant's response in chat history
+                fullResponse = correctedResult.get("fullResponse");
+                result.put("fullResponse",fullResponse);
                 chatMemoryService.storeUserChat(sessionId, "assistant", fullResponse);
-
-                // Store chat user in PostgreSQL
-                userChatService.saveUserChat(sessionId,message,queryResultJson);
-            } else {
-                result.put("sqlQuery", "No SQL query found in the response.");
-                chatMemoryService.storeUserChat(sessionId, "assistant", fullResponse);
+                return result;
             }
 
-            // ... (Other methods remain unchanged)
+            // Loop for up to 3 attempts
+            while (attempt <= maxAttempts && !success) {
+                try {
+                    logger.info("Attempt " + attempt + ": Executing SQL Query: " + sqlQuery);
+
+                    // Execute the SQL query
+                    List<Map<String, Object>> queryResult = sqlExecutionService.executeQuery(sqlQuery, dbParams);
+                    result.put("sqlQuery", sqlQuery);
+                    result.put("queryResult", queryResult);
+                    success = true; // Mark success
+                    logger.info("SQL Query executed successfully.");
+
+
+                    result.put("sqlQuery", sqlQuery);
+                    result.put("queryResult", queryResult);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String queryResultJson = objectMapper.writeValueAsString(queryResult);
+
+                    Map<String, Object> dataToStore = new HashMap<>();
+                    dataToStore.put("sessionID", sessionId);
+                    dataToStore.put("message", message);
+                    dataToStore.put("queryResult", queryResultJson);
+
+                    elasticsearchService.indexChatDocument("chat_index", sessionId + "-chat", dataToStore);
+
+                    semanticCacheService.cacheResponse(message, queryResultJson);
+                    exactCacheService.cacheExactResponse(message, queryResultJson);
+
+                    chatMemoryService.storeUserChat(sessionId, "assistant", fullResponse);
+
+                    userChatService.saveUserChat(sessionId, message, queryResultJson);
+
+
+                } catch (Exception e) {
+                    logger.error("Attempt " + attempt + ": SQL Execution failed: " + e.getMessage());
+
+                    if (attempt == maxAttempts) {
+                        result.put("error", "SQL execution failed after " + maxAttempts + " attempts: " + e.getMessage());
+                        break;
+                    }
+
+                    // Collect the error information
+                    String errorLog = e.getMessage();
+
+                    // Create a corrective prompt combining the original data
+                    String correctivePrompt = String.format(
+                            "'%s' \n\nThe original user request was: '%s'. The generated SQL query was: '%s'. The error encountered was: '%s'. The related schema is: '%s'. Please correct the SQL query based on this information. You MUST return the corrected SQL query only and DO NOT EXPLAIN ANYTHING.",
+                            systemRole, message, sqlQuery, errorLog, context
+                    );
+
+                    // Process the corrective prompt with the LLM
+                    Map<String, String> correctedResult = llmService.processMessage(message, model, correctivePrompt);
+
+                    sqlQuery = correctedResult.get("sqlQuery");
+
+                    if (sqlQuery == null || sqlQuery.isEmpty()) {
+                        logger.error("No corrected SQL query generated by LLM on attempt " + attempt);
+                        result.put("error", "Failed to generate a corrected SQL query on attempt " + attempt);
+                        break;
+                    }
+
+                }
+                attempt++;
+            }
+
+            if (!success) {
+                logger.error("SQL execution ultimately failed after " + maxAttempts + " attempts.");
+            }
+
         } catch (Exception e) {
             logger.error("Error processing chat", e);
             result.put("error", "Failed to process the request: " + e.getMessage());

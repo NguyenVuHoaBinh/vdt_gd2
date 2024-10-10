@@ -12,21 +12,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class GraphQLService {
 
+    private static final Logger logger = LoggerFactory.getLogger(GraphQLService.class);
     private static final String DATAHUB_GRAPHQL_URL = "http://localhost:8080/api/graphql";
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
 
     public GraphQLService() {
         this.restTemplate = new RestTemplate();
     }
 
     public String fetchDatabaseSchema(String databaseName) {
+        logger.info("Fetching database schema for database: {}", databaseName);
+
         // Create the GraphQL query string
         String query = String.format(
                 "{ search(input: { type: DATASET, query: \\\"%s\\\", start: 0, count: 1000 }) { searchResults { entity { ... on Dataset { name schemaMetadata { fields { fieldPath description nativeDataType } } } } } } }",
@@ -41,25 +45,26 @@ public class GraphQLService {
 
         HttpEntity<String> entity = new HttpEntity<>(jsonQuery, headers);
 
-        // Log the request details for debugging
-        System.out.println("Request Headers: " + headers);
-        System.out.println("Request Body: " + jsonQuery);
+        logger.debug("GraphQL request details - URL: {}, Headers: {}, Query: {}", DATAHUB_GRAPHQL_URL, headers, jsonQuery);
 
         try {
             ResponseEntity<String> responseEntity = restTemplate.exchange(DATAHUB_GRAPHQL_URL, HttpMethod.POST, entity, String.class);
             String response = responseEntity.getBody();
-            System.out.println("Response: " + response);
+            logger.info("Received response for database: {}", databaseName);
+            logger.debug("GraphQL response: {}", response);
             return extractSchemaMetadata(response);
         } catch (HttpClientErrorException e) {
-            // Handle the error and log details for debugging
-            System.err.println("HTTP Status: " + e.getStatusCode());
-            System.err.println("Error Response: " + e.getResponseBodyAsString());
+            logger.error("HTTP error while fetching database schema for database: {}. Status: {}, Error: {}", databaseName, e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new RuntimeException("Request to DataHub failed: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Error while fetching database schema for database: {}", databaseName, e);
             throw new RuntimeException("Request to DataHub failed: " + e.getMessage(), e);
         }
     }
 
     public String extractSchemaMetadata(String response) {
-        // Create a root array node to store table objects
+        logger.info("Extracting schema metadata from the response.");
+
         ArrayNode tablesArray = objectMapper.createArrayNode();
 
         try {
@@ -87,24 +92,26 @@ public class GraphQLService {
                     fieldObject.put("Field", fieldName);
                     fieldObject.put("Type", dataType);
 
-                    // Add the field object to the fields array
                     fieldsArray.add(fieldObject);
                 }
 
-                // Add fields array to the table object
                 tableObject.set("Fields", fieldsArray);
-
-                // Add table object to the tables array
                 tablesArray.add(tableObject);
             }
+
+            logger.info("Successfully extracted schema metadata.");
         } catch (Exception e) {
+            logger.error("Error extracting schema metadata from response.", e);
             throw new RuntimeException("Error extracting schema metadata: " + e.getMessage(), e);
         }
 
         // Convert the final JSON structure to a string
         try {
-            return objectMapper.writeValueAsString(tablesArray);
+            String resultJson = objectMapper.writeValueAsString(tablesArray);
+            logger.debug("Extracted schema metadata JSON: {}", resultJson);
+            return resultJson;
         } catch (Exception e) {
+            logger.error("Error converting schema metadata to JSON string.", e);
             throw new RuntimeException("Error converting to JSON string: " + e.getMessage(), e);
         }
     }

@@ -71,6 +71,11 @@ public class SQLGeminiService implements LLMServiceInterface {
         return "";
     }
 
+    @Override
+    public String errorSolver(String message) {
+        return "";
+    }
+
     private String extractSQLQuery(String fullResponse) {
         // Similar extraction logic as OpenAiService
         return fullResponse;

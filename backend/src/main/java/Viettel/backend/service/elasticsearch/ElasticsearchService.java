@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -25,6 +26,21 @@ public class ElasticsearchService {
         this.elasticsearchClient = elasticsearchClient;
         this.embeddingService = embeddingService;
     }
+
+    public void indexSchemaElement(String indexName, String id, Map<String, Object> element) {
+        try {
+            IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
+                    .index(indexName)
+                    .id(id)
+                    .document(element)
+            );
+            IndexResponse response = elasticsearchClient.index(request);
+            System.out.println("Indexed schema element with id: " + response.id());
+        } catch (IOException e) {
+            System.err.println("Error indexing schema element: " + e.getMessage());
+        }
+    }
+
 
     public String indexMetadataDocument(String indexName, String id, MetadataDocument document) throws IOException {
         // Create an IndexRequest to store the document in Elasticsearch

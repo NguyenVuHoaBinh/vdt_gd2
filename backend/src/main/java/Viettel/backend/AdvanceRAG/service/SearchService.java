@@ -31,37 +31,49 @@ public class SearchService {
             int numCandidates,
             int numResults) throws IOException {
 
+        // Validate input parameters
+        if (queryEmbedding == null || queryEmbedding.length == 0) {
+            throw new IllegalArgumentException("Query embedding must not be null or empty.");
+        }
+
+        if (numCandidates <= 0 || numResults <= 0) {
+            throw new IllegalArgumentException("numCandidates and numResults must be positive integers.");
+        }
+
         // Convert queryEmbedding to List<Double> for script params
         List<Double> queryVector = new ArrayList<>();
         for (double f : queryEmbedding) {
-            queryVector.add((double) f); // Convert float to double
+            queryVector.add(f); // Convert float to double
         }
 
         // Create params map with JsonData
         Map<String, JsonData> params = new HashMap<>();
         params.put("queryVector", JsonData.of(queryVector));
 
-        // Build the multi-match query
+        // Build the text query targeting "originalText" or "original_text"
         Query textQuery = MultiMatchQuery.of(mm -> mm
-                .fields(Arrays.asList("original_text", "keyphrases", "potential_questions", "entities"))
+                .fields(Arrays.asList("originalText", "original_text")) // Adjust based on which field you're using
                 .query(queryText)
         )._toQuery();
 
-        // Build the script score query
+        // Build the script score query for vector similarity
         Script script = Script.of(s -> s
                 .source("cosineSimilarity(params.queryVector, 'embedding') + 1.0")
-                .params(params) // Use the new params map with JsonData
+                .params(params)
+
         );
 
         Query vectorQuery = ScriptScoreQuery.of(ss -> ss
                 .query(MatchAllQuery.of(m -> m)._toQuery())
                 .script(script)
+                .boost(3F)
         )._toQuery();
 
-        // Build the bool query with should clauses
+        // Combine the text and vector queries using a bool query
         BoolQuery boolQuery = BoolQuery.of(b -> b
-                .should(textQuery)
-                .should(vectorQuery)
+                .should(textQuery)    // Include the text query
+                .should(vectorQuery)  // Include the vector query
+                .minimumShouldMatch("1") // Ensure at least one clause matches
         );
 
         Query finalQuery = boolQuery._toQuery();
@@ -69,19 +81,28 @@ public class SearchService {
         // Build the search request
         SearchRequest searchRequest = SearchRequest.of(s -> s
                 .index(indexName)
-                .size(numResults)
+                .size(numCandidates) // Retrieve more candidates initially
                 .query(finalQuery)
         );
 
-        // Execute the search
-        SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
-
-        // Extract hits
-        List<Hit<Map>> hits = response.hits().hits();
         List<Map<String, Object>> results = new ArrayList<>();
 
-        for (Hit<Map> hit : hits) {
-            results.add(hit.source());
+        try {
+            // Execute the search
+            SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
+
+            // Extract hits
+            List<Hit<Map>> hits = response.hits().hits();
+
+            for (Hit<Map> hit : hits) {
+                results.add(hit.source());
+                if (results.size() >= numResults) {
+                    break; // Stop once we have the desired number of results
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error executing Elasticsearch search: " + e.getMessage());
+            throw e;
         }
 
         return results;

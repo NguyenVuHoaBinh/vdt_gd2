@@ -7,4 +7,5 @@ public interface LLMServiceInterface {
     String processAnalysis(String message);
     String generateHyDE(String message);
     String generateRefinedQuery(String message);
+    String errorSolver(String message);
 }

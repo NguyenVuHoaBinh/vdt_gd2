@@ -63,4 +63,15 @@ public class LLMService {
                 throw new IllegalArgumentException("Unsupported model: " + model);
         }
     }
+
+    public String errorSolver(String message, String model) {
+        switch (model.toLowerCase()) {
+            case "gpt-3":
+                return sqlOpenAiService.errorSolver(message);
+            case "gemini":
+                return sqlGeminiService.errorSolver(message);
+            default:
+                throw new IllegalArgumentException("Unsupported model: " + model);
+        }
+    }
 }

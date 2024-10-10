@@ -19,6 +19,7 @@ public class DocumentService {
     private final Chunker chunker;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+
     public DocumentService(Chunker chunker,
                            EmbeddingService embeddingService,
                            ElasticsearchService elasticsearchService,

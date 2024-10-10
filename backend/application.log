@@ -1,0 +1,84 @@
+2024-09-25T14:04:54.630+07:00  INFO 200798 --- [backend] [main] Viettel.backend.BackendApplication       : Starting BackendApplication using Java 21.0.4 with PID 200798 (/home/binh/Documents/vdt/backend/target/classes started by binh in /home/binh/Documents/vdt/backend)
+2024-09-25T14:04:54.631+07:00 DEBUG 200798 --- [backend] [main] Viettel.backend.BackendApplication       : Running with Spring Boot v3.3.2, Spring v6.1.11
+2024-09-25T14:04:54.632+07:00  INFO 200798 --- [backend] [main] Viettel.backend.BackendApplication       : No active profile set, falling back to 1 default profile: "default"
+2024-09-25T14:04:55.357+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:04:55.358+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Elasticsearch repositories in DEFAULT mode.
+2024-09-25T14:04:55.374+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 13 ms. Found 0 Elasticsearch repository interfaces.
+2024-09-25T14:04:55.379+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:04:55.379+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Reactive Elasticsearch repositories in DEFAULT mode.
+2024-09-25T14:04:55.383+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 0 Reactive Elasticsearch repository interfaces.
+2024-09-25T14:04:55.394+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:04:55.395+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-09-25T14:04:55.404+07:00  INFO 200798 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 3 ms. Found 0 Redis repository interfaces.
+2024-09-25T14:04:55.984+07:00 DEBUG 200798 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : Code archive: /home/binh/.m2/repository/org/springframework/boot/spring-boot/3.3.2/spring-boot-3.3.2.jar
+2024-09-25T14:04:55.984+07:00 DEBUG 200798 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : Code archive: /home/binh/.m2/repository/org/springframework/boot/spring-boot/3.3.2/spring-boot-3.3.2.jar
+2024-09-25T14:04:55.985+07:00 DEBUG 200798 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : None of the document roots [src/main/webapp, public, static] point to a directory and will be ignored.
+2024-09-25T14:04:56.021+07:00  INFO 200798 --- [backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with ports 8888 (https), 8889 (http)
+2024-09-25T14:04:56.038+07:00  INFO 200798 --- [backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2024-09-25T14:04:56.039+07:00  INFO 200798 --- [backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.26]
+2024-09-25T14:04:56.103+07:00  INFO 200798 --- [backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2024-09-25T14:04:56.104+07:00  INFO 200798 --- [backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1316 ms
+2024-09-25T14:04:57.021+07:00  INFO 200798 --- [backend] [main] V.b.s.cacheservice.ExactCacheService     : Scheduled hit count cleanup task initialized.
+2024-09-25T14:04:57.031+07:00  INFO 200798 --- [backend] [main] V.b.s.cacheservice.SemanticCacheService  : RediSearch index 'semantic_cache_index' already exists.
+2024-09-25T14:04:57.928+07:00  INFO 200798 --- [backend] [main] o.a.t.util.net.NioEndpoint.certificate   : Connector [https-jsse-nio-8888], TLS virtual host [_default_], certificate type [UNDEFINED] configured from keystore [/home/binh/.keystore] using alias [mycert] with trust store [null]
+2024-09-25T14:04:57.940+07:00  INFO 200798 --- [backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on ports 8888 (https), 8889 (http) with context path '/'
+2024-09-25T14:04:57.956+07:00  INFO 200798 --- [backend] [main] Viettel.backend.BackendApplication       : Started BackendApplication in 3.71 seconds (process running for 3.939)
+2024-09-25T14:07:56.619+07:00  INFO 202711 --- [backend] [main] Viettel.backend.BackendApplication       : Starting BackendApplication using Java 21.0.4 with PID 202711 (/home/binh/Documents/vdt/backend/target/classes started by binh in /home/binh/Documents/vdt/backend)
+2024-09-25T14:07:56.620+07:00 DEBUG 202711 --- [backend] [main] Viettel.backend.BackendApplication       : Running with Spring Boot v3.3.2, Spring v6.1.11
+2024-09-25T14:07:56.621+07:00  INFO 202711 --- [backend] [main] Viettel.backend.BackendApplication       : No active profile set, falling back to 1 default profile: "default"
+2024-09-25T14:07:57.273+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:07:57.274+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Elasticsearch repositories in DEFAULT mode.
+2024-09-25T14:07:57.289+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 12 ms. Found 0 Elasticsearch repository interfaces.
+2024-09-25T14:07:57.294+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:07:57.294+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Reactive Elasticsearch repositories in DEFAULT mode.
+2024-09-25T14:07:57.298+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 3 ms. Found 0 Reactive Elasticsearch repository interfaces.
+2024-09-25T14:07:57.306+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:07:57.306+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-09-25T14:07:57.314+07:00  INFO 202711 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 3 ms. Found 0 Redis repository interfaces.
+2024-09-25T14:07:57.805+07:00 DEBUG 202711 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : Code archive: /home/binh/.m2/repository/org/springframework/boot/spring-boot/3.3.2/spring-boot-3.3.2.jar
+2024-09-25T14:07:57.805+07:00 DEBUG 202711 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : Code archive: /home/binh/.m2/repository/org/springframework/boot/spring-boot/3.3.2/spring-boot-3.3.2.jar
+2024-09-25T14:07:57.806+07:00 DEBUG 202711 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : None of the document roots [src/main/webapp, public, static] point to a directory and will be ignored.
+2024-09-25T14:07:57.833+07:00  INFO 202711 --- [backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with ports 8888 (https), 8889 (http)
+2024-09-25T14:07:57.844+07:00  INFO 202711 --- [backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2024-09-25T14:07:57.844+07:00  INFO 202711 --- [backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.26]
+2024-09-25T14:07:57.875+07:00  INFO 202711 --- [backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2024-09-25T14:07:57.876+07:00  INFO 202711 --- [backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1128 ms
+2024-09-25T14:07:58.794+07:00  INFO 202711 --- [backend] [main] V.b.s.cacheservice.ExactCacheService     : Scheduled hit count cleanup task initialized.
+2024-09-25T14:07:58.811+07:00  INFO 202711 --- [backend] [main] V.b.s.cacheservice.SemanticCacheService  : RediSearch index 'semantic_cache_index' already exists.
+2024-09-25T14:07:59.814+07:00  INFO 202711 --- [backend] [main] o.a.t.util.net.NioEndpoint.certificate   : Connector [https-jsse-nio-8888], TLS virtual host [_default_], certificate type [UNDEFINED] configured from keystore [/home/binh/.keystore] using alias [mycert] with trust store [null]
+2024-09-25T14:07:59.825+07:00  INFO 202711 --- [backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on ports 8888 (https), 8889 (http) with context path '/'
+2024-09-25T14:07:59.835+07:00  INFO 202711 --- [backend] [main] Viettel.backend.BackendApplication       : Started BackendApplication in 3.679 seconds (process running for 4.028)
+2024-09-25T14:25:12.843+07:00  INFO 202711 --- [backend] [https-jsse-nio-8888-exec-5] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2024-09-25T14:25:12.844+07:00  INFO 202711 --- [backend] [https-jsse-nio-8888-exec-5] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2024-09-25T14:25:12.845+07:00  INFO 202711 --- [backend] [https-jsse-nio-8888-exec-5] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2024-09-25T14:25:12.874+07:00  INFO 202711 --- [backend] [https-jsse-nio-8888-exec-5] V.backend.controller.ModelController     : Received request to search models with tagKey: task and tagValue: text_to_sql
+2024-09-25T14:25:12.874+07:00 DEBUG 202711 --- [backend] [https-jsse-nio-8888-exec-5] V.backend.controller.ModelController     : Constructed MLflow URL: http://localhost:5001/api/2.0/mlflow/registered-models/search?filter=tags.task = 'text_to_sql'
+2024-09-25T14:25:12.905+07:00  INFO 202711 --- [backend] [https-jsse-nio-8888-exec-5] V.backend.controller.ModelController     : Received response from MLflow API with status: 200 OK
+2024-09-25T14:25:12.913+07:00 DEBUG 202711 --- [backend] [https-jsse-nio-8888-exec-5] V.backend.controller.ModelController     : Parsing registered models from response
+2024-09-25T14:25:12.914+07:00 DEBUG 202711 --- [backend] [https-jsse-nio-8888-exec-5] V.backend.controller.ModelController     : Added model: seeklhy_codes-1b with versions: [1]
+2024-09-25T14:25:12.914+07:00  INFO 202711 --- [backend] [https-jsse-nio-8888-exec-5] V.backend.controller.ModelController     : Returning 1 models in response
+2024-09-25T14:29:14.763+07:00  INFO 214029 --- [backend] [main] Viettel.backend.BackendApplication       : Starting BackendApplication using Java 21.0.4 with PID 214029 (/home/binh/Documents/vdt/backend/target/classes started by binh in /home/binh/Documents/vdt/backend)
+2024-09-25T14:29:14.765+07:00 DEBUG 214029 --- [backend] [main] Viettel.backend.BackendApplication       : Running with Spring Boot v3.3.2, Spring v6.1.11
+2024-09-25T14:29:14.765+07:00  INFO 214029 --- [backend] [main] Viettel.backend.BackendApplication       : No active profile set, falling back to 1 default profile: "default"
+2024-09-25T14:29:15.485+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:29:15.486+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Elasticsearch repositories in DEFAULT mode.
+2024-09-25T14:29:15.501+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 11 ms. Found 0 Elasticsearch repository interfaces.
+2024-09-25T14:29:15.505+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:29:15.505+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Reactive Elasticsearch repositories in DEFAULT mode.
+2024-09-25T14:29:15.508+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 2 ms. Found 0 Reactive Elasticsearch repository interfaces.
+2024-09-25T14:29:15.515+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-09-25T14:29:15.516+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-09-25T14:29:15.524+07:00  INFO 214029 --- [backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 2 ms. Found 0 Redis repository interfaces.
+2024-09-25T14:29:16.013+07:00 DEBUG 214029 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : Code archive: /home/binh/.m2/repository/org/springframework/boot/spring-boot/3.3.2/spring-boot-3.3.2.jar
+2024-09-25T14:29:16.013+07:00 DEBUG 214029 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : Code archive: /home/binh/.m2/repository/org/springframework/boot/spring-boot/3.3.2/spring-boot-3.3.2.jar
+2024-09-25T14:29:16.014+07:00 DEBUG 214029 --- [backend] [main] V.backend.config.HttpsRedirectConfig$1   : None of the document roots [src/main/webapp, public, static] point to a directory and will be ignored.
+2024-09-25T14:29:16.043+07:00  INFO 214029 --- [backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with ports 8888 (https), 8889 (http)
+2024-09-25T14:29:16.055+07:00  INFO 214029 --- [backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2024-09-25T14:29:16.056+07:00  INFO 214029 --- [backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.26]
+2024-09-25T14:29:16.091+07:00  INFO 214029 --- [backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2024-09-25T14:29:16.091+07:00  INFO 214029 --- [backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1188 ms
+2024-09-25T14:29:16.881+07:00  INFO 214029 --- [backend] [main] V.b.s.cacheservice.ExactCacheService     : Scheduled hit count cleanup task initialized.
+2024-09-25T14:29:16.893+07:00  INFO 214029 --- [backend] [main] V.b.s.cacheservice.SemanticCacheService  : RediSearch index 'semantic_cache_index' already exists.
+2024-09-25T14:29:17.863+07:00  INFO 214029 --- [backend] [main] o.a.t.util.net.NioEndpoint.certificate   : Connector [https-jsse-nio-8888], TLS virtual host [_default_], certificate type [UNDEFINED] configured from keystore [/home/binh/.keystore] using alias [mycert] with trust store [null]
+2024-09-25T14:29:17.872+07:00  INFO 214029 --- [backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on ports 8888 (https), 8889 (http) with context path '/'
+2024-09-25T14:29:17.879+07:00  INFO 214029 --- [backend] [main] Viettel.backend.BackendApplication       : Started BackendApplication in 3.464 seconds (process running for 3.686)
