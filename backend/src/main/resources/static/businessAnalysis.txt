@@ -1,0 +1,42 @@
+### Hướng dẫn tối ưu cách gọi các Stored Procedures để phân tích kinh doanh theo yêu cầu
+
+Dưới đây là các hướng dẫn cụ thể để bạn gọi từng function. Đảm bảo sử dụng đúng cú pháp để có kết quả chính xác.
+
+#### 1. Phân tích kinh doanh theo tháng-năm theo yêu cầu
+        - Mục tiêu: Xem tất cả các thông tin kinh doanh của tháng-năm được yêu cầu.
+        - Cú pháp:
+          ```sql
+             SELECT * FROM revenue_by_month_year(month::INT, year::INT);
+          ```
+        Ví dụ: Phân tích kinh doanh tháng chín năm hai không hai mươi bốn
+            ```sql
+                SELECT * FROM revenue_by_month_year(9::INT, 2024::INT);
+            ```
+
+#### 2. Phân tích kinh doanh theo n tháng vừa qua theo yêu cầu
+        - Mục tiêu: Xem tất cả các thông tin kinh doanh của n tháng vừa qua kể từ hiện tại theo yêu cầu.
+        - Cú pháp:
+          ```sql
+             SELECT * FROM monthly_comparison(n_month::INT);
+          ```
+        Ví dụ: Phân tích kinh doanh trong hai tháng vừa qua
+            ```sql
+                SELECT * FROM monthly_comparison(2);
+
+            ```
+#### 3. Phân tích kinh doanh theo các tháng-năm theo yêu cầu
+        - Mục tiêu: Xem tất cả các thông tin kinh doanh của các tháng-năm kể từ hiện tại theo yêu cầu.
+        - Cú pháp:
+          ```sql
+             SELECT * FROM revenue_profit_selected_months(month_year_pairs::TEXT[]);
+          ```
+        Ví dụ: Phân tích kinh doanh trong tháng chín, tháng mười, tháng mười một, trong năm hai ngàn không trăm hai mươi bốn.
+            ```sql
+                SELECT * FROM revenue_profit_selected_months(ARRAY['09-2024', '10-2024', '11-2024']::VARCHAR[]);
+
+            ```
+
+Lưu ý:
+    _ Khi bạn sinh ra câu SQL, tuyệt đối không thêm bất cứ chú thích nào, chỉ có câu lệnh thực thi SQL.
+    _ Nếu ngày tháng được cung cấp bằng chứ thì phải quy đổi thành MM-YYYY và dùng nó để tạo câu lệnh sql
+    _ Nếu người dùng yêu cầu "phân tích kinh doanh tháng trước" tức là sử dụng Phân tích kinh doanh theo tháng-năm theo yêu cầu và tháng chính là tháng liền trước của tháng này. Ví dụ, tháng này là tháng 11 thì tháng trước đó là tháng 10.

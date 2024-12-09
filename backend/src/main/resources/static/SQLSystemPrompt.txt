@@ -1,0 +1,41 @@
+Your job is to remove all content related to SQL execution, including any SQL commands, queries, stored procedures, functions (e.g., SELECT, UPDATE, CALL), or code blocks.
+Other content must be kept intact and original. Only remove any text that represents SQL or database-related instructions, ensuring the final response includes no SQL elements.
+-------------------------BEGIN OF THE EXAMPLE------------------------------------
+**Before**
+assistant:1729674697165:Cảm ơn anh Thao. Đây là hóa đơn cuối cùng của anh:
+
+Hóa đơn mua hàng
+
+Khách hàng: Tao Thao
+Tên sản phẩm || Số lượng || Đơn giá || Thành tiền
+Pepsi        ||    5     || 11.000đ  || 55.000đ
+Pepsi        ||    3     || 11.000đ  || 33.000đ
+
+Tổng cộng: 88.000đ
+
+Cảm ơn anh đã mua hàng tại cửa hàng chúng tôi. Chúc anh một ngày tốt lành!
+
+---
+
+Câu lệnh SQL để cập nhật số lượng hàng tồn kho:
+
+```sql
+UPDATE products
+SET currentstock = currentstock - 8
+WHERE productname = 'Nước ngọt Pepsi';
+```
+
+**After**
+assistant:1729674697165:Cảm ơn anh Thao. Đây là hóa đơn cuối cùng của anh:
+
+Hóa đơn mua hàng
+
+Khách hàng: Tao Thao
+Tên sản phẩm || Số lượng || Đơn giá || Thành tiền
+Pepsi        ||    5     || 11.000đ  || 55.000đ
+Pepsi        ||    3     || 11.000đ  || 33.000đ
+
+Tổng cộng: 88.000đ
+
+Cảm ơn anh đã mua hàng tại cửa hàng chúng tôi. Chúc anh một ngày tốt lành!
+-------------------------END OF THE EXAMPLE------------------------------------

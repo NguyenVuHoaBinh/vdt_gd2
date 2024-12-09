@@ -1,47 +1,74 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CForm,
-  CFormInput,
-  CFormSelect,
-  CSpinner,
-  CInputGroup,
-  CInputGroupText,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle
-} from '@coreui/react';
-import {
-  MessageBox,
-  MessageList,
-  Input,
-  Button as ChatButton
-} from 'react-chat-elements';
-import 'react-chat-elements/dist/main.css';
+import React, { useState, useEffect } from 'react';
+import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CSpinner } from '@coreui/react';
+import InputField from '../InputField';
+import ModalComponent from '../ModalComponent';
+import ChatBox from '../ChatBox';
+import ModelSelect from '../ModelSelect'; 
 
 const NLP2PostGreSQL = () => {
   const [dbParams, setDbParams] = useState({ host: '', database: '', user: '', password: '', dbType: 'postgres' });
   const [model, setModel] = useState('');
+  const [modelType, setModelType] = useState('');
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+  const [sessionId, setSessionId] = useState(null);
+  const [viewMode, setViewMode] = useState('UI'); 
+  const [logs, setLogs] = useState([]);
   const [chatLog, setChatLog] = useState([]);
-  const [metadata, setMetadata] = useState('');
-  const [queryResult, setQueryResult] = useState(null);
-  const chatRef = useRef(null);
 
+  const apiConnectionEndpoint = 'https://localhost:8888/connect';
+
+  // Generate a sessionId when component mounts or if not already set
   useEffect(() => {
-    // Scroll to the bottom when chat log updates
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    if (!sessionId) {
+      const newSessionId = generateSessionId();
+      setSessionId(newSessionId);
     }
-  }, [chatLog]);
+  }, [sessionId]);
+
+  // Initialize chatLog from localStorage when sessionId is available
+  useEffect(() => {
+    if (sessionId) {
+      const savedChatLog = localStorage.getItem(`chatLog-${sessionId}`);
+      if (savedChatLog) {
+        setChatLog(JSON.parse(savedChatLog));
+      }
+    }
+  }, [sessionId]);
+
+  // Persist chatLog to localStorage when it changes
+  useEffect(() => {
+    if (sessionId) {
+      localStorage.setItem(`chatLog-${sessionId}`, JSON.stringify(chatLog));
+    }
+  }, [chatLog, sessionId]);
+
+  // Initialize WebSocket for logs
+  useEffect(() => {
+    const socket = new WebSocket('wss://localhost:8888/logs'); // Update with your WebSocket URL
+
+    socket.onmessage = (event) => {
+      const newLog = event.data;
+      setLogs((prevLogs) => [...prevLogs, newLog]); // Accumulate logs
+    };
+
+    // Clean up WebSocket connection
+    return () => socket.close();
+  }, []);
+
+  const generateSessionId = () => {
+    return `session-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  };
+
+  const startNewSession = () => {
+    const newSessionId = generateSessionId();
+    setSessionId(newSessionId);
+    localStorage.removeItem(`chatLog-${sessionId}`); // Clear chat log for the old session
+    setChatLog([]); // Clear chatLog state
+    setConnected(false); // Reset connection status
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -56,25 +83,27 @@ const NLP2PostGreSQL = () => {
     }
 
     setLoading(true);
+
+    // Construct payload for debugging
+    const payload = { ...dbParams, sessionId };
+    console.log("Payload for connectToDB:", payload); // Debugging: Check your payload here
+
     try {
-      const response = await fetch('http://localhost:8089/connect', {
+      const response = await fetch(apiConnectionEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dbParams),
+        body: JSON.stringify(payload),
       });
       const result = await response.json();
-      
+
       if (result.success) {
         setConnected(true);
         let message = 'Connection established!';
-        setMetadata(result.metadata);
-        
         if (result.ingestionResult) {
           message += `\nIngestion Result: ${result.ingestionResult}`;
         }
-        
         setModalMessage(message);
       } else {
         setModalMessage(`Connection failed: ${result.message || 'Unknown error'}`);
@@ -86,172 +115,128 @@ const NLP2PostGreSQL = () => {
     setModalVisible(true);
   };
 
-  const handleChatSubmit = async (message) => {
-    if (!model) {
-      setModalMessage('Please select an LLM model before sending a message.');
-      setModalVisible(true);
-      return;
-    }
-
-    if (!connected) {
-      setModalMessage('Please connect to the database before sending a message.');
-      setModalVisible(true);
-      return;
-    }
-
-    const newChatLog = [...chatLog, { user: 'user', text: message }];
-    setChatLog(newChatLog);
-
-    try {
-      const role = "You are a powerful AI Assistant. You respond only to any request that is related to data for PostgreSQL queries. Your task is to convert their request into SQL queries. The next part is the metadata that help you generate right queries.";
-      const response = await fetch('http://localhost:8089/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message, model, role, metadata }),
-      });
-      const result = await response.json();
-
-      // Extract the query result and the SQL query from the response
-      setChatLog([...newChatLog, { 
-        user: 'bot', 
-        text:   `${result.fullResponse}\n\n
-                SQL Query: ${result.sqlQuery}\n\n
-                Result:\n${JSON.stringify(result.queryResult, null, 2)}` }]);
-      setQueryResult(result.queryResult);
-    } catch (error) {
-      setChatLog([...newChatLog, { user: 'bot', text: 'Error fetching response' }]);
-    }
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) {
-      setModalMessage('No file selected.');
-      setModalVisible(true);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const response = await fetch('http://localhost:8089/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const result = await response.json();
-      setModalMessage(result.response || 'File uploaded successfully');
-    } catch (error) {
-      setModalMessage(`Error uploading file: ${error.message}`);
-    }
-    setModalVisible(true);
-  };
-
   return (
     <div>
-      <h1>PostGreSQL Query</h1>
-      <CCard>
-        <CCardHeader>Connect to PostGreSQL Database</CCardHeader>
-        <CCardBody>
-          <CForm>
-            <CInputGroup className="mb-3">
-              <CInputGroupText>Host IP</CInputGroupText>
-              <CFormInput id="host" name="host" value={dbParams.host} onChange={handleInputChange} />
-            </CInputGroup>
-            <CInputGroup className="mb-3">
-              <CInputGroupText>Database Name</CInputGroupText>
-              <CFormInput id="database" name="database" value={dbParams.database} onChange={handleInputChange} />
-            </CInputGroup>
-            <CInputGroup className="mb-3">
-              <CInputGroupText>User</CInputGroupText>
-              <CFormInput id="user" name="user" value={dbParams.user} onChange={handleInputChange} />
-            </CInputGroup>
-            <CInputGroup className="mb-3">
-              <CInputGroupText>Password</CInputGroupText>
-              <CFormInput id="password" name="password" type="password" value={dbParams.password} onChange={handleInputChange} />
-            </CInputGroup>
-            <CInputGroup className="mb-3">
-              <CInputGroupText>Database Type</CInputGroupText>
-              <CFormSelect id="dbType" name="dbType" value={dbParams.dbType} onChange={handleInputChange}>
-                <option value="postgres">PostGreSQL</option>
-              </CFormSelect>
-            </CInputGroup>
-            <CInputGroup className="mb-3">
-              <CInputGroupText>LLM Model</CInputGroupText>
-              <CFormSelect id="model" value={model} onChange={(e) => setModel(e.target.value)}>
-                <option value="" disabled>Select a model</option>
-                <option value="gpt-3">GPT-3</option>
-                <option value="gemini">Gemini</option>
-              </CFormSelect>
-            </CInputGroup>
-            <CButton color="primary" onClick={connectToDB} disabled={loading}>
-              {loading ? <CSpinner size="sm" /> : 'Connect'}
-            </CButton>
-          </CForm>
-        </CCardBody>
-      </CCard>
+      <h1>Postgres Query</h1>
 
-      <CCard className="mt-4">
-        <CCardHeader>Chatbot</CCardHeader>
-        <CCardBody>
-          <div ref={chatRef} style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            <MessageList
-              className="message-list"
-              lockable={true}
-              toBottomHeight={'100%'}
-              dataSource={chatLog.map((entry, index) => ({
-                position: entry.user === 'user' ? 'right' : 'left',
-                type: 'text',
-                text: entry.text,
-                date: new Date(),
-              }))}
-            />
-          </div>
-          <Input
-            placeholder="Type message here"
-            defaultValue=""
-            onKeyPress={(e) => {
-              if (e.shiftKey && e.charCode === 13) {
-                return true;
-              }
-              if (e.charCode === 13 && !e.shiftKey) {
-                handleChatSubmit(e.target.value);
-                e.target.value = "";
-                return false;
-              }
-            }}
-            rightButtons={
-              <ChatButton
-                color='white'
-                backgroundColor='black'
-                text='Send'
-                onClick={() => {
-                  const input = document.querySelector('.rce-input').value;
-                  handleChatSubmit(input);
-                  document.querySelector('.rce-input').value = '';
-                }}
-              />
-            }
-          />
-          <CInputGroup className="mt-3">
-            <CInputGroupText>Upload File</CInputGroupText>
-            <CFormInput type="file" onChange={handleFileUpload} />
-          </CInputGroup>
-        </CCardBody>
-      </CCard>
+      <div style={{ marginBottom: '20px' }}>
+        {/* Button Group for view selection */}
+        <CButtonGroup role="group" aria-label="View selection">
+          <CButton 
+            color={viewMode === 'UI' ? 'primary' : 'secondary'} 
+            onClick={() => setViewMode('UI')}
+          >
+            UI
+          </CButton>
+          <CButton 
+            color={viewMode === 'API UI' ? 'primary' : 'secondary'} 
+            onClick={() => setViewMode('API UI')}
+          >
+            API UI
+          </CButton>
+          <CButton 
+            color={viewMode === 'Log UI' ? 'primary' : 'secondary'} 
+            onClick={() => setViewMode('Log UI')}
+          >
+            Log UI
+          </CButton>
+        </CButtonGroup>
+      </div>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>Notification</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          {modalMessage}
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>Close</CButton>
-        </CModalFooter>
-      </CModal>
+      {viewMode === 'UI' && (
+        <div>
+          {!connected ? (
+            <CCard>
+              <CCardHeader>Connect to Postgres Database</CCardHeader>
+              <CCardBody>
+                <InputField label="Host IP" name="host" value={dbParams.host} onChange={handleInputChange} />
+                <InputField label="Database Name" name="database" value={dbParams.database} onChange={handleInputChange} />
+                <InputField label="User" name="user" value={dbParams.user} onChange={handleInputChange} />
+                <InputField label="Password" name="password" type="password" value={dbParams.password} onChange={handleInputChange} />
+                
+                <ModelSelect 
+                  selectedModel={model} 
+                  setModel={setModel} 
+                  setModelType={setModelType} 
+                  task="text_to_sql"
+                />
+                
+                <CButton color="primary" onClick={connectToDB} disabled={loading}>
+                  {loading ? <CSpinner size="sm" /> : 'Connect'}
+                </CButton>
+              </CCardBody>
+            </CCard>
+          ) : (
+            <CCard>
+              <CCardHeader>
+                Chatbot (Session ID: {sessionId || 'N/A'})
+                <CButton color="warning" onClick={startNewSession} className="float-end">
+                  Start New Session
+                </CButton>
+              </CCardHeader>
+              <CCardBody>
+                {/* Render ChatBox component with necessary props */}
+                <ChatBox 
+                  model={model} 
+                  modelType={modelType} 
+                  sessionId={sessionId} 
+                  connected={connected} 
+                  chatLog={chatLog} 
+                  setChatLog={setChatLog} 
+                />
+              </CCardBody>
+            </CCard>
+          )}
+        </div>
+      )}
+
+      {viewMode === 'API UI' && (
+        <CCard>
+          <CCardHeader>API UI - Connection</CCardHeader>
+          <CCardBody>
+            <h4>API Connection Endpoint</h4>
+            <div style={{ padding: '10px', backgroundColor: '#f1f1f1', borderRadius: '5px' }}>
+              <code>https://localhost:8888/connect</code>
+              <button onClick={() => navigator.clipboard.writeText('https://localhost:8888/connect')}>Copy</button>
+            </div>
+
+            <h4 className="mt-3">Request Body for Connection</h4>
+            <div style={{ padding: '10px', backgroundColor: '#f1f1f1', borderRadius: '5px' }}>
+              <pre>
+                {`{
+  "host": "required",
+  "database": "required",
+  "user": "required",
+  "password": "required",
+  "dbType": "postgres"
+}`}
+              </pre>
+              <button onClick={() => navigator.clipboard.writeText(`{
+  "host": "required",
+  "database": "required",
+  "user": "required",
+  "password": "required",
+  "dbType": "postgres"
+}`)}>Copy</button>
+            </div>
+          </CCardBody>
+        </CCard>
+      )}
+
+      {viewMode === 'Log UI' && (
+        <CCard>
+          <CCardHeader>Log UI</CCardHeader>
+          <CCardBody style={{ maxHeight: '400px', overflowY: 'scroll' }}>
+            {logs.length > 0 ? (
+              logs.map((log, index) => <div key={index}>{log}</div>)
+            ) : (
+              <p>No logs available.</p>
+            )}
+          </CCardBody>
+        </CCard>
+      )}
+
+      <ModalComponent visible={modalVisible} message={modalMessage} onClose={() => setModalVisible(false)} />
     </div>
   );
 };

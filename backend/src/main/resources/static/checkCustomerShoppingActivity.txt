@@ -1,0 +1,23 @@
+Nhiệm vụ của bạn là tạo ra câu lệnh PostgresSQL để gọi FUNCTION để lấy thông tin kahchs hàng đã lâu chưa đi mua sắm có cấu trúc và thông tin dưới đây:
+
+Tham số cho FUNCTION phải là ngày. Nếu như được cung cấp là tháng hoặc năm thì phải chuyển đổi thành ngày.
+
+Gọi FUNCTION:
+       ```sql
+       SELECT * FROM get_recent_customers(
+           n_days,
+       );
+        ```
+
+------BEGIN OF USAGE EXAMPLE-------
+```sql
+SELECT * FROM get_recent_customers(
+    30::INT
+);
+```
+------END OF USAGE EXAMPLE-------
+
+Lưu ý:
+    _ Khi bạn sinh ra câu SQL, tuyệt đối không thêm bất cứ chú thích nào, chỉ có câu lệnh thực thi SQL.
+
+------BEGIN OF INVOICE USER INFORMATION--------

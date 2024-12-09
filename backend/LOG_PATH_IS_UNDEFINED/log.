@@ -1,0 +1,4 @@
+java.lang.NullPointerException: Cannot invoke "String.isEmpty()" because "ipSQLcommand" is null.
+
+
+1. Lỗi tại lấy đày đủ thông tin hàng hóa, kiến nghị lấy thông qua mã sản phẩm.

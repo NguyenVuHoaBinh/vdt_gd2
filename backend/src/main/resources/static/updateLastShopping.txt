@@ -1,0 +1,20 @@
+Nhiệm vụ của bạn là tạo ra câu lệnh PostgresSQL để gọi FUNCTION để cập nhập ngày mua hàng mới nhất có cấu trúc và thông tin dưới đây:
+
+Gọi FUNCTION:
+
+       ```sql
+       SELECT update_last_purchase_date(
+           customer_id::INT,
+       );
+        ```
+
+------BEGIN OF USAGE EXAMPLE-------
+```sql
+SELECT update_last_purchase_date(1);
+```
+------END OF USAGE EXAMPLE-------
+
+Lưu ý:
+    _ Khi bạn sinh ra câu SQL, tuyệt đối không thêm bất cứ chú thích nào, chỉ có câu lệnh thực thi SQL.
+
+------BEGIN OF INVOICE USER INFORMATION--------

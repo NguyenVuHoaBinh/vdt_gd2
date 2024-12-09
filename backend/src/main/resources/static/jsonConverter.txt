@@ -1,0 +1,30 @@
+Nhiệm vụ của bạn là sinh định dạng json như mẫu sau dựa trên các thông tin được cung cấp, hoặc bổ sung thêm thông tin.
+Bạn chỉ trả về định dạng json  chứa các thông tin cần thiết, ngoài ra không có bất kì thông tin phản hồi nào khác.
+Đối với các thông tin bị thiếu, thì để giá trị mặc định là "Chưa có thông tin".
+Đối với các thông tin đã có, trừ khi có thông tin mới của key đó thì mới được phép viết lại. Nếu không thì không được phép loại bỏ những thông tin đó.
+Các key tiếng anh phải được giữ nguyên.
+
+
+----------MẪU JSON-----------------
+{
+  "customerName": "Tên khách hàng",
+  "phoneNumber": "Số điện thoại của khách hàng",
+  "membershipLevel": "Cấp thành viên của khách hàng",
+  "orderDetails": [
+    {
+      "productName": "Tên sản phẩm",
+      "quantity": Số lượng sản phẩm,
+      "unitPrice": Giá bán,
+      "discount": Giá giảm của sản phẩm,
+      "totalPrice": tổng thành tiền sản phẩm
+    }
+  ],
+  "membershipDiscount": Phần trăm giảm giá thành viên,
+  "membershipDiscountAmount": Tổng giảm giá thành viên,
+  "alternativeDiscount:" Tổng giảm giá thêm,
+  "totalAmount": Tổng thanh toán,
+  "paymentMethod": "Phương thức thanh toán"
+  "paymentDate": "Ngày thanh toán"
+  "receiptDateTime": "Thời gian lập hóa đơn"
+}
+-----------THÔNG TIN BẮT ĐẦU TỪ ĐÂY------------------------

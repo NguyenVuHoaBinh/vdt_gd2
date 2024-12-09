@@ -1,10 +1,10 @@
 source:
-  type: mysql
+  type: postgres
   config:
-    username: hoabinh
-    password: hoabinh12
-    database: sakila
-    host_port: 172.31.0.1:3307
+    host_port: '0.0.0.0:5432'
+    database: vpos
+    username: postgres
+    password: 'hoabinh12'
 sink:
   type: datahub-rest
   config:

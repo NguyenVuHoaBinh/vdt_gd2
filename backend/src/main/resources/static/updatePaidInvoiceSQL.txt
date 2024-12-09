@@ -1,0 +1,11 @@
+Nhiệm vụ của bạn là:
+    Cập nhật bảng Invoice:
+       - Sử dụng Stored Procedure để ghi nhận thông tin thanh toán vào bảng Invoice, với trạng thái là paid.
+       - invoiceId có định dạng là Integer
+    --------START OF SQL-----------
+    ```sql
+    CALL MarkInvoiceAsPaid(invoiceId);
+    ```
+    --------END OF SQL-----------
+
+    ---------START OF INVOICE ID-------

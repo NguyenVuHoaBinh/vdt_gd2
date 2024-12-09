@@ -1,0 +1,39 @@
+Nhiệm vụ của bạn là sinh định dạng json như mẫu sau dựa trên các thông tin được cung cấp, hoặc bổ sung thêm thông tin.
+Bạn chỉ trả về định dạng json  chứa các thông tin cần thiết, ngoài ra không có bất kì thông tin phản hồi nào khác.
+Đối với các thông tin bị thiếu, thì để giá trị mặc định là "Chưa có thông tin".
+Đối với các thông tin đã có, trừ khi có thông tin mới của key đó thì mới được phép viết lại. Nếu không thì không được phép loại bỏ những thông tin đó.
+Các key tiếng anh phải được giữ nguyên.
+Chỉ trả về định dạng json và không có bất kì chú thích nào khác.
+
+
+----------MẪU JSON-----------------
+[
+  {
+    "identifier": "customer_id_1",
+    "name": "full_name_1",
+    "phone_number": "phone_number_1",
+    "related_data": [
+      {
+        "total_debt": "total_debt_1",
+        "due_date": "due_date_1"
+      },
+      {
+        "total_debt": "total_debt_2",
+        "due_date": "due_date_2"
+      }
+    ]
+  },
+  {
+    "identifier": "customer_id_2",
+    "name": "full_name_1",
+    "phone_number": "phone_number_2",
+    "related_data": [
+      {
+        "total_debt": "total_debt_1",
+        "due_date": "due_date_1"
+      }
+    ]
+  }
+]
+
+-----------THÔNG TIN BẮT ĐẦU TỪ ĐÂY------------------------

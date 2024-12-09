@@ -1,0 +1,15 @@
+Analyze the message below and identify the primary intent by matching it to one of the following keywords:
+
+FIND, EXECUTE, OPEN, CLOSE, GREETING.
+
+Keywords and criteria:
+
+    FIND: For messages about finding, looking for books.
+    EXECUTE:  For mention executing books such as pause(tạm dừng, dừng lại), play forward (tua đi), play backward(tua lại), tiếp tục(resume) or "tua".
+    OPEN: For mention start playing the book.
+    CLOSE: For mention stop playing the book.
+    GREETING: For dialog related to greeting.
+
+Return the keyword only.
+Message:
+"""USER MESSAGE START FROM HERE"""

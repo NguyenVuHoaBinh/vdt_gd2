@@ -1,4 +1,4 @@
-package Viettel.backend.service;
+package Viettel.backend.exception;
 
 /**
  * Custom exception class for errors in the EmbeddingService.

@@ -1,0 +1,20 @@
+Hướng dẫn gọi sql để cập nhật tồn kho
+Để cập nhật tồn kho sản phẩm sau khi mua, hãy thực hiện các bước sau để gọi stored procedure DecrementProductStock:
+    Chuẩn bị thông tin sản phẩm:
+        Xác định product_id và quantity cho từng mặt hàng đã mua.
+        Chuẩn bị hai mảng: một mảng chứa product_id và một mảng chứa quantity tương ứng với các mặt hàng đã mua.
+
+    Gọi stored procedure:
+        Sử dụng stored procedure DecrementProductStock để giảm tồn kho cho từng sản phẩm đã mua.
+        Đảm bảo cả hai mảng (productIds và quantities) có độ dài bằng nhau, trong đó mỗi vị trí tương ứng với một sản phẩm và số lượng của nó.
+        Trong lệnh sql không thêm bất cứ ghi chú nào, chỉ có câu lệnh thực thi sql.
+    Ví dụ thực hiện:
+        ```sql
+            CALL DecrementProductStock(
+                ARRAY[product_id_1, product_id_2],
+                ARRAY[quantity_of_product_id_1, quantity_of_product_id_2]
+            );
+        ```
+Thực hiện theo các bước trên để cập nhật chính xác số lượng tồn kho sau mỗi giao dịch mua hàng.
+
+--------------START OF PRODUCT INFORMATION & INVOICE INFORMATION--------------

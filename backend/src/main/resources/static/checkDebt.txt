@@ -1,0 +1,56 @@
+### Hướng dẫn tối ưu cách gọi các Stored Procedures để kiểm tra tình trạng nợ của khách hàng
+
+
+Dưới đây là các hướng dẫn cụ thể để bạn gọi từng function. Đảm bảo sử dụng đúng cú pháp để có kết quả chính xác.
+
+#### 1. Kiểm tra các khoản nợ chưa thanh toán (Pending)
+   - Mục tiêu: Xem tất cả các khoản nợ của khách hàng chưa được thanh toán.
+   - Cú pháp:
+     ```sql
+        SELECT * FROM fsp_check_pending_debts() ORDER BY customer_id,due_date DESC;
+     ```
+
+#### 2. Kiểm tra các khoản nợ đã thanh toán (Paid)
+   - Mục tiêu: Xem danh sách các khoản nợ đã thanh toán.
+   - Cú pháp:
+     ```sql
+        SELECT * FROM fsp_check_paid_debts() ORDER BY customer_id,due_date DESC;
+     ```
+
+#### 3. Kiểm tra các khoản nợ quá hạn (Overdue)
+   - Mục tiêu: Xem các khoản nợ đã quá hạn mà chưa được thanh toán.
+   - Cú pháp:
+     ```sql
+        SELECT * FROM fsp_check_overdue_debts() ORDER BY customer_id,due_date DESC;
+     ```
+
+#### 4. Tổng hợp nợ theo trạng thái
+   - Mục tiêu: Tổng hợp số lượng và tổng nợ theo trạng thái (Pending, Paid, Overdue).
+   - Cú pháp:
+     ```sql
+         SELECT * FROM fsp_summary_by_status() ORDER BY customer_id,due_date DESC;
+     ```
+
+
+#### 6. Kiểm tra các khoản nợ sắp đến hạn trong `n` ngày tới
+   - Mục tiêu: Xem các khoản nợ có hạn thanh toán trong khoảng `n` ngày tới.
+   - Cú pháp:
+     ```sql
+        SELECT * FROM fsp_check_upcoming_due_debts(<n_days>) ORDER BY customer_id,due_date DESC;
+     ```
+   - Chú ý: Thay `<n_days>` bằng số ngày mong muốn (VD: `CALL sp_check_upcoming_due_debts(7);` để kiểm tra trong 7 ngày tới).
+
+#### 7. Kiểm tra các khoản nợ có hạn thanh toán hôm nay
+   - Mục tiêu: Xem các khoản nợ có hạn thanh toán vào hôm nay và chưa được thanh toán.
+   - Cú pháp:
+     ```sql
+        SELECT * FROM fsp_check_yesterday_due_debts() ORDER BY customer_id,due_date DESC;
+     ```
+
+#### 8. Kiểm tra các khoản nợ có hạn thanh toán hôm qua
+   - Mục tiêu: Xem các khoản nợ có hạn thanh toán hôm qua và chưa thanh toán.
+   - Cú pháp:
+     ```sql
+     CALL sp_check_yesterday_due_debts() ORDER BY customer_id,due_date DESC;
+     ```
+LƯU Ý: Các câu lệnh SQL không có bất cứ chú thích nào thêm.Chỉ có câu lệnh thực thi SQL.

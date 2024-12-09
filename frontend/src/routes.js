@@ -8,6 +8,10 @@ const Toolpage = React.lazy(() => import('./views/toolpage/Toolpage'))
 const NLP2MySQL = React.lazy(()=> import('./components/nlp2mysql/NLP2MySQL'))
 const NLP2MSSQL = React.lazy(()=> import('./components/nlp2mssql/NLP2MSSQL'))
 const NLP2PostGreSQL = React.lazy(()=> import('./components/nlp2postgresql/NLP2PostGreSQL'))
+const NLP2JSONSchema = React.lazy(()=> import('./components/nlp2jsonschema/NLP2JSONSchema'))
+const LangGraphWorkflow = React.lazy(()=> import('./components/LangGraphWorkflow'))
+const NLP2VPOS = React.lazy(() => import('./components/nlp2vpos/NLP2VPOS'))
+const NLP2MYDIO = React.lazy(()=> import('./components/nlp2mydio/NLP2MYDIO'))
 
 
 
@@ -63,8 +67,10 @@ const routes = [
   { path: '/toolpage', name:'Toolpage', element: Toolpage},
   { path: '/nlp2mysql', name:'NLP2MySQL', element: NLP2MySQL},
   { path: '/nlp2mssql', name:'NLP2MSSQL', element: NLP2MSSQL},
+  { path: '/nlp2mydio', name:'NLP2MYDIO', element: NLP2MYDIO},
   { path: '/nlp2postgresql', name:'NLP2PostGreSQL', element: NLP2PostGreSQL},
-
+  { path: '/nlp2vpos', name:'NLP2VPOS', element: NLP2VPOS},
+  { path: '/nlp2jsonschema', name:'NLP2JSONSchema', element: NLP2JSONSchema},
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
