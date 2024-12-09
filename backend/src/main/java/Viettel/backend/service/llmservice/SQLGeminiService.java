@@ -76,6 +76,242 @@ public class SQLGeminiService implements LLMServiceInterface {
         return "";
     }
 
+    @Override
+    public String create_invoice(String message) {
+        return "";
+    }
+
+    @Override
+    public String create_invoice_warehouse(String message) {
+        return "";
+    }
+
+    @Override
+    public String get_product_detail(String message) {
+        return "";
+    }
+
+    @Override
+    public String task_analysis(String message) {
+        return "";
+    }
+
+    @Override
+    public String processOrder(String message) {
+        return "";
+    }
+
+    @Override
+    public String checkCustomer(String message) {
+        return "";
+    }
+
+    @Override
+    public Map<String, String> createCustomerSQL(String message) {
+        return null;
+    }
+
+    @Override
+    public String isOrder(String message) {
+        return "";
+    }
+
+    @Override
+    public String isCustomerInfo(String message) {
+        return "";
+    }
+
+    @Override
+    public String isInvoice(String message) {
+        return "";
+    }
+
+    @Override
+    public String isContainSQL(String message) {
+        return "";
+    }
+
+    @Override
+    public String processPayment(String message) {
+        return "";
+    }
+
+    @Override
+    public Map<String, String> createImmediatelyPayment(String message) {
+        return Map.of();
+    }
+
+    @Override
+    public String createInvoiceSQL(String message) {
+        return "";
+    }
+
+    @Override
+    public String updatePaidInvoiceSQL(String message) {
+        return "";
+    }
+
+    @Override
+    public String updateDeferredInvoiceSQL(String message) {
+        return "";
+    }
+
+    @Override
+    public String updateCancelledInvoiceSQL(String message) {
+        return "";
+    }
+
+    @Override
+    public String updateInvoiceSQL(String message) {
+        return "";
+    }
+
+    @Override
+    public String createInvoiceDetail(String message) {
+        return "";
+    }
+
+    @Override
+    public String updateStock(String message) {
+        return "";
+    }
+
+    @Override
+    public Map<String, String> createDebtPayment(String message) {
+        return Map.of();
+    }
+
+    @Override
+    public String checkDebt(String message) {
+        return "";
+    }
+
+    @Override
+    public String processCheckDebt(String message) {
+        return "";
+    }
+
+    @Override
+    public Map<String, String> processImport(String message) {
+        return Map.of();
+    }
+
+    @Override
+    public Map<String, String> adjustProduct(String message) {
+        return Map.of();
+    }
+
+    @Override
+    public String stockAlert(String message) {
+        return "";
+    }
+
+    @Override
+    public String updateLastShopping(String message) {
+        return "";
+    }
+
+    @Override
+    public String checkCustomerShoppingActivity(String message) {
+        return "";
+    }
+
+    @Override
+    public String processCheckCustomerShoppingActivity(String message) {
+        return "";
+    }
+
+    @Override
+    public String sellingTrend(String message) {
+        return "";
+    }
+
+    @Override
+    public String businessAnalysis(String message) {
+        return "";
+    }
+
+    @Override
+    public String processBusinessAnalysis(String message) {
+        return "";
+    }
+
+    @Override
+    public String productTrending(String message) {
+        return "";
+    }
+
+    @Override
+    public String processProductTrending(String message) {
+        return "";
+    }
+
+    @Override
+    public String audioSmoothTranslation(String message) {
+        return "";
+    }
+
+    @Override
+    public String jsonConverter(String message) {
+        return "";
+    }
+
+    @Override
+    public String importJsonConverter(String message) {
+        return "";
+    }
+
+    @Override
+    public String baJsonConverter(String message) {
+        return "";
+    }
+
+    @Override
+    public String debtJsonConverter(String message) {
+        return "";
+    }
+
+    @Override
+    public String customerInactiveJsonConverter(String message) {
+        return "";
+    }
+
+    @Override
+    public String restockJsonConverter(String message) {
+        return "";
+    }
+
+    @Override
+    public String sellingTrendJsonConverter(String message) {
+        return "";
+    }
+
+    @Override
+    public String mydioCall(String message) {
+        return "";
+    }
+
+    @Override
+    public String mydioExec(String message) {
+        return "";
+    }
+
+    @Override
+    public String mydioAnalysis(String message) {
+        return "";
+    }
+
+    @Override
+    public String mydioStart(String message) {
+        return "";
+    }
+
+    @Override
+    public String ambiguousDetection(String message) {
+        return "";
+    }
+
+
     private String extractSQLQuery(String fullResponse) {
         // Similar extraction logic as OpenAiService
         return fullResponse;

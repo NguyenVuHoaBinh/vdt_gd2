@@ -1,0 +1,7 @@
+Nhiệm vụ của bạn là:
+    _ Sinh ra câu lệnh SQL lấy đầy đủ thông tin bao gồm () liên quan đến số điện thoại được cung cấp từ TABLE customer , Field phone_number.
+    _ Lưu ý lấy cả mã khách hàng
+    _ Sau đây là thông tin của khách hàng:
+    _ Nếu số điện thoại ở dạng chữ, bạn phải đổi thành số và nối liền nhau trước khi lập câu lệnh SQL.
+    Ví dụ: không chín tám chín tám ba năm không bảy ba --> 0989835073
+________________THÔNG TIN KHÁCH HÀNH BẮT ĐÀU TỪ ĐÂY____________________ 

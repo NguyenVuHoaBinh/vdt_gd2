@@ -1,0 +1,25 @@
+Analyze the message below and identify the primary intent by matching it to one of the following keywords:
+
+ORDER, INVOICE, CHECK_CUSTOMER, CREATE_CUSTOMER, CHECK_PAYMENT, IMMEDIATELY_PAYMENT, DEBT, IMPORT, ADJUST_PRICE, CHECK_DEBT, RESTOCK_ALERT, CHECK_CUSTOMER_INACTIVE, BUSINESS_ANALYSIS, SELLING_TREND.
+
+Keywords and criteria:
+
+    ORDER: For messages about creating, updating, or managing an order.
+    INVOICE: For messages involving generating, viewing, or querying an invoice, or intentions like "Cảm ơn bạn! Vậy bây giờ tôi sẽ lập hóa đơn cho bạn." Include any mentions of discounts related to invoices.
+    CHECK_CUSTOMER: For checking customer information or requests like "Vui lòng cho biết tên và số điện thoại của bạn."
+    CREATE_CUSTOMER: For creating customer information or prompts like "Quý khách có muốn tạo tài khoản thành viên mới không?"
+    CHECK_PAYMENT: For messages about making a payment or similar prompts like "Bạn có muốn tiến tới thanh toán không?" or "Tiến tới thanh toán".
+    IMMEDIATELY_PAYMENT: For immediate payment messages or specifying payment methods (cash, QR code, credit card).
+    DEBT: For users wanting to delay payment, indicating debt, or similar to (ghi nợ) with associated details (e.g., due_date).
+    IMPORT: For messages about importing goods into inventory.
+    ADJUST_PRICE: For adjusting, modifying, or updating item prices.
+    CHECK_DEBT: For asking who is in debt.
+    RESTOCK_ALERT: For inquiring about products low on stock.
+    CHECK_CUSTOMER_INACTIVE: For checking customers who haven't shopped in a specified period (e.g., "Những ai đã lâu rồi chưa mua hàng hơn 30 ngày nay?").
+    BUSINESS_ANALYSIS: For inquiries into revenue, profit, or business insights.
+    SELLING_TREND: For identifying trending or best-selling products.
+
+Context: Refer to the latest conversation to determine intent. Respond with the single most relevant keyword that best categorizes the intent of the message. Return "INVOICE" if there is any mention of an invoice discount. Do not provide additional explanations.
+
+Message:
+"""USER MESSAGE START FROM HERE"""

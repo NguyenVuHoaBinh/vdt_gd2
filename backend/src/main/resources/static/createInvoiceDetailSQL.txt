@@ -1,0 +1,30 @@
+Nhiệm vụ của bạn là tạo ra câu lệnh PostgresSQL để gọi stored procedure để cập nhập hóa đơn chi tiết có cấu trúc và thông tin dưới đây:
+
+Gọi stored procedure:
+        Đảm bảo cả các mảng có độ dài bằng nhau, trong đó mỗi vị trí tương ứng với một sản phẩm và số lượng của nó.
+        Nhập hoặc cập nhật nhiều sản phẩm cùng lúc bằng cách gọi AddOrUpdateProducts với các mảng thông tin của từng sản phẩm:
+
+       ```sql
+       CALL add_invoice_details(
+           invoiceId,
+           ARRAY[productIds_1, 'productIds_2']::VARCHAR[],
+           ARRAY[quantities, 'quantities']::INT[],
+           ARRAY[unitPrices, 'unitPrices']::NUMERIC[],
+       );
+        ```
+
+------BEGIN OF USAGE EXAMPLE-------
+```sql
+CALL add_invoice_details(
+    1::INT,
+    ARRAY[1, 2, 3]::INT[],
+    ARRAY[2, 1, 3]::INT[],
+    ARRAY[1500.00, 800.00, 200.00]::NUMERIC[]
+);
+```
+------END OF USAGE EXAMPLE-------
+
+Lưu ý:
+    _ Khi bạn sinh ra câu SQL, tuyệt đối không thêm bất cứ chú thích nào, chỉ có câu lệnh thực thi SQL.
+
+------BEGIN OF INVOICE USER INFORMATION--------

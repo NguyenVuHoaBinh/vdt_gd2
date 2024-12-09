@@ -31,6 +31,7 @@ public class ChatMemoryService {
 
     private final JedisPooled jedisPooled;
 
+
     /**
      * Constructor for dependency injection.
      *
@@ -231,4 +232,114 @@ public class ChatMemoryService {
         String visiblePart = sessionId.substring(sessionId.length() - 4);
         return "****" + visiblePart;
     }
+
+    /**
+     * Stores a message or entity data (order, invoice, etc.) in Redis by entity type.
+     *
+     * @param sessionId  the unique identifier for the session
+     * @param entityType the type of entity (e.g., "chat", "order", "invoice")
+     * @param data       the data content to store
+     */
+    public void storeEntityData(String sessionId, String entityType, String data) {
+        if (!isValidSessionId(sessionId) || !isValidEntityType(entityType)) {
+            logger.warn("Invalid input provided for storing entity data. sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType);
+            return;
+        }
+
+        String redisKey = entityType + ":" + sessionId;
+        try {
+            logger.debug("Storing data for sessionId: {}, entityType: {}, redisKey: {}", maskSessionId(sessionId), entityType, redisKey);
+            AbstractTransaction transaction = jedisPooled.multi();
+            transaction.del(redisKey);
+            transaction.rpush(redisKey, data);
+            transaction.expire(redisKey, getExpirationTime(entityType));
+            transaction.exec();
+            logger.info("Stored data for sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType);
+        } catch (JedisException e) {
+            logger.error("Failed to store data for sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType, e);
+        }
+    }
+
+    /**
+     * Retrieves entity data (chat history, order details, etc.) from Redis by entity type and session ID.
+     *
+     * @param sessionId  the unique identifier for the session
+     * @param entityType the type of entity (e.g., "chat", "order", "invoice")
+     * @return a list of data entries or an empty list if not found or on error
+     */
+    public List<String> getEntityData(String sessionId, String entityType) {
+        if (!isValidSessionId(sessionId) || !isValidEntityType(entityType)) {
+            logger.warn("Invalid sessionId or entityType provided for retrieving data. sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType);
+            return new ArrayList<>();
+        }
+
+        String redisKey = entityType + ":" + sessionId;
+        try {
+            logger.debug("Retrieving data for sessionId: {}, entityType: {}, redisKey: {}", maskSessionId(sessionId), entityType, redisKey);
+            List<String> dataEntries = jedisPooled.lrange(redisKey, 0, -1);
+            if (dataEntries == null || dataEntries.isEmpty()) {
+                logger.info("No data found for sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType);
+                return new ArrayList<>();
+            }
+            return dataEntries;
+        } catch (JedisException e) {
+            logger.error("Failed to retrieve data for sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Gets the expiration time based on entity type.
+     *
+     * @param entityType the type of entity
+     * @return the expiration time in seconds
+     */
+    private int getExpirationTime(String entityType) {
+        switch (entityType) {
+            case "metadata":
+                return METADATA_EXPIRATION;
+            case "chat":
+                return CHAT_HISTORY_EXPIRATION;
+            case "order":
+            case "invoice":
+                return 30 * 24 * 3600; // 30 days, for example
+            default:
+                return 7 * 24 * 3600; // Default to 7 days if unspecified
+        }
+    }
+
+    /**
+     * Validates the entity type.
+     *
+     * @param entityType the entity type to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidEntityType(String entityType) {
+        return entityType != null && (entityType.equals("chat") ||
+                entityType.equals("order") ||
+                entityType.equals("invoice") ||
+                entityType.equals("metadata") ||
+                entityType.equals("customer")) ||
+                entityType.equals("invoice") ||
+                entityType.equals("invoice_id") ||
+                entityType.equals("product_info") ||
+                entityType.equals("check_debt_info") ||
+                entityType.equals("json") ||
+                entityType.equals("jsonImport") ||
+                entityType.equals("jsonAdjust") ||
+                entityType.equals("jsonBA") ||
+                entityType.equals("jsonDebt") ||
+                entityType.equals("jsonInactive") ||
+                entityType.equals("jsonRestockAlert") ||
+                entityType.equals("jsonTrend")  ||
+                entityType.equals("jsonAmbiguousDetection") ||
+                entityType.equals("finalSearch")    ||
+                entityType.equals("finalBook")  ||
+                entityType.equals("finalPlaying")
+                ;
+    }
+
+
+
+
 }

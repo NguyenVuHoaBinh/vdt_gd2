@@ -185,19 +185,19 @@ public class SQLChatController {
             }
 
 
-            String cachedResponse = exactCacheService.getExactCachedResponse(message);
-            if (cachedResponse != null) {
-                logger.info("Semantic cache hit, returning cached response.");
-                result.put("queryResult", cachedResponse);
-                return result;
-            }
-            // Check cache (optional)
-             String semnaticCachedResponse = semanticCacheService.performHybridSearch(message);
-             if (semnaticCachedResponse != null) {
-                 logger.info("Semantic cache hit, returning cached response.");
-                 result.put("fullResponse", semnaticCachedResponse);
-                 return result;
-             }
+//            String cachedResponse = exactCacheService.getExactCachedResponse(message);
+//            if (cachedResponse != null) {
+//                logger.info("Semantic cache hit, returning cached response.");
+//                result.put("queryResult", cachedResponse);
+//                return result;
+//            }
+//            // Check cache (optional)
+//             String semnaticCachedResponse = semanticCacheService.performHybridSearch(message);
+//             if (semnaticCachedResponse != null) {
+//                 logger.info("Semantic cache hit, returning cached response.");
+//                 result.put("fullResponse", semnaticCachedResponse);
+//                 return result;
+//             }
 
             // Retrieve previous chat history
             List<String> previousChats = chatMemoryService.getUserChat(sessionId);
@@ -246,12 +246,14 @@ public class SQLChatController {
             String context = contextBuilder.toString();
 
             // Combine system role, schema metadata, and user message to create an enhanced prompt
-            String combinedPrompt = "\n\nConversation History:\n" + conversationHistory +
+            String combinedPrompt =
                     (systemRole != null ? systemRole : "") +
                     "\n\nSchema Metadata:\n" + context +
+                    "\n\nConversation History:\n" + conversationHistory +
                     "\n\nUser Query:\n" + message;
 
             logger.info("Enhanced Prompt: \n{}", combinedPrompt);
+
 
             // Initialize attempt counter
             int maxAttempts = 3;
@@ -262,8 +264,13 @@ public class SQLChatController {
             Map<String, String> processedResult = llmService.processMessage(message, model, combinedPrompt);
             String sqlQuery = processedResult.get("sqlQuery");
             String fullResponse = processedResult.get("fullResponse");
+            result.put("fullResponse",fullResponse);
+            //modify
+            chatMemoryService.storeUserChat(sessionId, "user", message);
 
-            // Check if the response indicates "No suitable request"
+
+
+//            // Check if the response indicates "No suitable request"
             if ("No suitable request, entity is not found in the given schema.".equalsIgnoreCase(fullResponse.trim())) {
                 logger.info("No suitable entity found, searching for related fields in schema.");
 
@@ -272,22 +279,22 @@ public class SQLChatController {
                         """
                                 You are given the user query and schema that contain tables and fields, your job is to find any field name that related to the user query intention
                                 For example:
-                                
+
                                 User: "Give me all data about day active mon"
                                 Schema: "1\\",\\"Type\\":\\"TEXT\\"},{\\"Field\\":\\"day_active_mon_n\\",\\"Type\\":\\"DATE\\"},{\\"Field\\":\\"day_active_mon_n1\\",\\"Type\\":\\"TEXT\\"},{\\"Field\\":\\"phi_dk_data_phanbo_combo\\",\\"Type\\":\\"TEXT\\"}]},{\\"Table\\":\\"f_ccai_profile_telecom_mon\\",\\"Fields\\":[{\\"Field\\":\\"id\\",\\"Type\\":\\"INTEGER\\"},{\\"Field\\":\\"bq_cuoc_goc_6thang\\",\\"Type\\":\\"TEXT\\"}]},{\\"Table\\":\\"f_ccai_profile_telecom_month\\",\\"Fields\\":[{\\"Field\\":\\"id\\",\\"Type\\":\\"INTEGER\\"},{\\"Field\\":\\"tong_tieu_dung\\",\\"Type\\":\\"TEXT\\"},
                                 Response: You mean day_active_mon_n, day_active_mon_n1?
-                                
+
                                 If the field name existing in multiple table, please list also the table that the field name related to.
-                                
+
                                 For example:
-                                
+
                                 User: "Give me all data about day active mon"
                                 Schema: {"Table":"mb_pos_daily_new","Fields":[{"Field":"id","Type":"INTEGER"},{"Field":"tong_tieu_dung","Type":"TEXT"},{"Field":"ds_ctkm_potential_customer","Type":"TEXT"},{"Field":"goi_cuoc_data","Type":"TEXT"},{"Field":"ds_goi_addon","Type":"TEXT"}]},{"Table":"mb_pos_new","Fields":[{"Field":"id","Type":"INTEGER"},{"Field":"tong_tieu_dung","Type":"TEXT"}]}
                                 Response: You mean tong_tieu_dung in mb_pos_new or tong_tieu_dung in mb_pos_daily_new?
-                                
+
                                 START OF THE USER QUERY: '%s'
-                                
-                                START OF THE SCHEMA: 
+
+                                START OF THE SCHEMA:
                                 '%s'
                                 """,
                         message,context
@@ -303,7 +310,7 @@ public class SQLChatController {
                 return result;
             }
 
-            // Loop for up to 3 attempts
+//             Loop for up to 3 attempts
             while (attempt <= maxAttempts && !success) {
                 try {
                     logger.info("Attempt " + attempt + ": Executing SQL Query: " + sqlQuery);

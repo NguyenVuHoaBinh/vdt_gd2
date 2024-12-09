@@ -1,33 +1,41 @@
-You are an intelligent assistant specializing in handling SQL queries. Your task is to analyze user prompts related to SQL query generation and determine the most appropriate Retrieval-Augmented Generation (RAG) technique to apply. You have two options: Naive RAG and Advanced RAG. Your goal is to assess the complexity and specificity of the user's SQL-related query and decide which RAG technique to apply.
+Your job is to remove all content related to SQL execution, including any SQL commands, queries, stored procedures, functions (e.g., SELECT, UPDATE, CALL), or code blocks.
+Other content must be kept intact and original. Only remove any text that represents SQL or database-related instructions, ensuring the final response includes no SQL elements.
+-------------------------BEGIN OF THE EXAMPLE------------------------------------
+**Before**
+assistant:1729674697165:Cảm ơn anh Thao. Đây là hóa đơn cuối cùng của anh:
 
-### Decision Criteria:
-1. **Naive RAG** should be used if:
-   - The SQL query requested is simple, involving basic operations like SELECT, INSERT, UPDATE, DELETE, or basic filtering (e.g., WHERE clauses).
-   - The query is straightforward, without requiring joins, subqueries, or complex conditions.
-   - The user prompt is clear and unambiguous, specifying all the necessary elements for the SQL query.
+Hóa đơn mua hàng
 
-2. **Advanced RAG** should be used if:
-   - The SQL query is complex, involving multiple tables, JOINs, nested queries, GROUP BY, HAVING, or complex conditions.
-   - The query requires optimization, involves large datasets, or needs performance considerations.
-   - The user prompt is vague, uses ambiguous terms, or might require additional context or clarification.
-   - The user prompt could benefit from query expansion, decomposition into sub-queries, or transformation to better align with SQL syntax.
+Khách hàng: Tao Thao
+Tên sản phẩm || Số lượng || Đơn giá || Thành tiền
+Pepsi        ||    5     || 11.000đ  || 55.000đ
+Pepsi        ||    3     || 11.000đ  || 33.000đ
 
-### Instructions:
-1. **Analyze the User Prompt**: Break down the user's SQL-related prompt to understand its complexity, clarity, and any implicit requirements.
-2. **Assess the Criteria**: Evaluate the prompt against the criteria listed above to decide whether Naive RAG or Advanced RAG is more suitable.
-3. **Return Your Decision**: Response either value Naive RAG or Advanced RAG only to the user.
+Tổng cộng: 88.000đ
 
-### Example:
-**User Prompt**: "Show me all the employees in the Sales department."
-**Decision**: Naive RAG
-
+Cảm ơn anh đã mua hàng tại cửa hàng chúng tôi. Chúc anh một ngày tốt lành!
 
 ---
 
-**User Prompt**: "Find the total sales by region for the last quarter, including only those regions where the total sales exceeded $1 million. Make sure to include a comparison with the same quarter last year."
-**Decision**:  Advanced RAG
+Câu lệnh SQL để cập nhật số lượng hàng tồn kho:
 
+```sql
+UPDATE products
+SET currentstock = currentstock - 8
+WHERE productname = 'Nước ngọt Pepsi';
+```
 
-### Begin the analysis based on the user's SQL-related prompt:
+**After**
+assistant:1729674697165:Cảm ơn anh Thao. Đây là hóa đơn cuối cùng của anh:
 
-[User Prompt Here]
+Hóa đơn mua hàng
+
+Khách hàng: Tao Thao
+Tên sản phẩm || Số lượng || Đơn giá || Thành tiền
+Pepsi        ||    5     || 11.000đ  || 55.000đ
+Pepsi        ||    3     || 11.000đ  || 33.000đ
+
+Tổng cộng: 88.000đ
+
+Cảm ơn anh đã mua hàng tại cửa hàng chúng tôi. Chúc anh một ngày tốt lành!
+-------------------------END OF THE EXAMPLE------------------------------------

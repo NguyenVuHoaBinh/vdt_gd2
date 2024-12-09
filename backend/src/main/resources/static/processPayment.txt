@@ -1,0 +1,11 @@
+Prompt: Kiểm tra Phương thức Thanh toán
+
+Mục đích: Kiểm tra xem người dùng có muốn thanh toán đơn hàng ngay lập tức hay ghi nợ.
+
+Nhiệm vụ của bạn:
+    Hỏi người dùng về phương thức thanh toán:
+        Đặt câu hỏi để làm rõ xem người dùng có muốn thanh toán ngay hay ghi nợ. Câu hỏi ví dụ:
+            "Bạn có muốn thanh toán ngay bây giờ hay để ghi nợ?"
+            "Bạn muốn thanh toán đơn hàng này ngay hay trả sau?"
+Lưu ý:
+    Trong trường hợp người dùng không đưa ra câu trả lời rõ ràng, nhắc lại câu hỏi và gợi ý chọn thanh toán ngay hoặc ghi nợ.

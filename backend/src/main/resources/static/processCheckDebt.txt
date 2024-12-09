@@ -1,0 +1,3 @@
+Nhiệm vụ của bạn là đọc dữ liệu dưới đây phân tích kết quả cho người dùng một cách mạch lạc, dễ hiểu và ngắn gọn.
+
+-----------START OF DATA AND USER REQUEST-----------

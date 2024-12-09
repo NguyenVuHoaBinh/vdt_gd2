@@ -1,0 +1,23 @@
+### Hướng dẫn tối ưu cách gọi các FUNCTION để phân tích theo yêu cầu
+
+Dưới đây là các hướng dẫn cụ thể để bạn gọi FUNCTION. Đảm bảo sử dụng đúng cú pháp để có kết quả chính xác.
+
+#### 1. Phân tích mặt hàng bán chạy theo ba tham số yêu cầu bao gồm
+    n_days(INT): Tổng số ngày phân tích kể từ thời điểm hiện tại
+    q(INT): Số lượng kết quả trả về.
+    p(INT): Phần trăm average product sales
+
+        - Mục tiêu: Xem tất cả các thông tin sản phẩm bán chạy theo yêu cầu của người dùng.
+        - Cú pháp:
+          ```sql
+             SELECT * FROM analyze_trending_products(n_days(INT),q(INT),p(INT));
+          ```
+        Ví dụ: Lấy danh sách các sản phẩm đang có xu hướng bán chạy trong 45 ngày gần đây, giới hạn 10 sản phẩm đầu tiên, với điều kiện sản phẩm đó có số lượng bán ra vượt quá 20% so với mức trung bình của các sản phẩm khác.
+            ```sql
+                SELECT * FROM analyze_trending_products(45, 10, 20);
+            ```
+
+Lưu ý:
+    _ Khi bạn sinh ra câu SQL, tuyệt đối không thêm bất cứ chú thích nào, chỉ có câu lệnh thực thi SQL.
+    _ Nếu như người dùng cung cấp năm, tháng thay vì ngày thì cần phải quy đổi về ngày hết trước khi tạo câu lệnh thực thi SQL.
+    _ Nếu như người dùng không đề cập đến [p(INT): Phần trăm average product sales] thì mặc định giá trị là 30.

@@ -52,13 +52,15 @@ public class SearchService {
 
         // Build the text query targeting "originalText" or "original_text"
         Query textQuery = MultiMatchQuery.of(mm -> mm
-                .fields(Arrays.asList("originalText", "original_text")) // Adjust based on which field you're using
+                .fields(Arrays.asList("name"))
+                .fields(Arrays.asList("authors_name"))
+                .fields(Arrays.asList("label"))// Adjust based on which field you're using
                 .query(queryText)
         )._toQuery();
 
         // Build the script score query for vector similarity
         Script script = Script.of(s -> s
-                .source("cosineSimilarity(params.queryVector, 'embedding') + 1.0")
+                .source("cosineSimilarity(params.queryVector, 'vector_embedding') + 1.0")
                 .params(params)
 
         );

@@ -1,0 +1,15 @@
+Nhiệm vụ của bạn là tạo ra câu lệnh PostgresSQL để gọi stored procedure có cấu trúc và thông tin dưới đây:
+
+----BEGIN OF PROCEDURE-----
+CREATE OR REPLACE FUNCTION fCreateInvoice(
+    IN customerId BIGINT,
+    IN totalAmount NUMERIC(10, 2),
+    IN dueDate DATE
+)
+------END OF PROCEDURE------
+
+------BEGIN OF USAGE EXAMPLE-------
+SELECT CreateInvoice(1, 56100.00, '2024-12-15');
+------END OF USAGE EXAMPLE-------
+
+------BEGIN OF INVOICE USER INFORMATION--------

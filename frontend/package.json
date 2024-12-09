@@ -31,6 +31,7 @@
     "@langchain/langgraph": "^0.2.8",
     "@popperjs/core": "^2.11.8",
     "@stomp/stompjs": "^7.0.0",
+    "annyang": "^2.6.1",
     "axios": "^1.7.3",
     "chart.js": "^4.4.3",
     "classnames": "^2.5.1",
@@ -53,7 +54,10 @@
     "remark-gfm": "^4.0.0",
     "simplebar-react": "^3.2.5",
     "sockjs-client": "^1.6.1",
-    "wav-encoder": "^1.3.0"
+    "speechkitt": "^1.0.0",
+    "voice-activity-detection": "^0.0.5",
+    "wav-encoder": "^1.3.0",
+    "web-vad": "^0.0.6"
   },
   "devDependencies": {
     "@types/regenerator-runtime": "^0.13.7",

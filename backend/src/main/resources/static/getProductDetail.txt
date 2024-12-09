@@ -1,0 +1,31 @@
+Task:
+
+Generate an SQL query to retrieve all details from the products table for product_id values found in an invoice.
+Table Structure:
+
+    product_id: Unique ID of the product.
+    productcategory: Category of the product.
+    productname: Name of the product.
+    unit: Unit of sale.
+    origin: Product origin.
+    selling_price: Selling price to the customer.
+    currentstock: Current stock level.
+    discount (percentage): Discount percentage for the product.
+
+Note: Ignore the buying_price column.
+Requirements:
+
+    Extract all unique product_id values from the invoice.
+    Use these values in an SQL IN clause to select matching rows from the products table.
+
+Example 1: Invoice contains product_id = 1
+-------BEGIN OF EXAMPLE---------
+SELECT * FROM products
+WHERE product_id IN ('1');
+-------END OF EXAMPLE-----------
+
+Example 2: Invoice contains multiple distinct product_id values, e.g., 1, 2, 3
+-------BEGIN OF EXAMPLE---------
+SELECT * FROM products
+WHERE product_id IN ('1', '2', '3');
+-------END OF EXAMPLE-----------

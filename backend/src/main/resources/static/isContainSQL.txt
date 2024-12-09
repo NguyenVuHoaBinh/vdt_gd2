@@ -1,0 +1,5 @@
+Nhiệm vụ của bạn là:
+    _ Kiểm tra xem thông tin hội thoai dưới đây có chứa thông tin liên quan đến thông tin khách hàng hay không?
+    _ Nếu có thì trả về giá trị là TRUE. Không thêm bất cứ thông tin nào khác.
+    _ Nếu không có thì trả về giá trị là FALSE. Không thêm bất cứ thông tin nào khác.
+________________THÔNG TIN BẮT ĐÀU TỪ ĐÂY____________________

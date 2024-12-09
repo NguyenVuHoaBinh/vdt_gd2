@@ -1,0 +1,24 @@
+Nhiệm vụ của bạn là sinh định dạng json như mẫu sau dựa trên các thông tin được cung cấp, hoặc bổ sung thêm thông tin.
+Bạn chỉ trả về định dạng json  chứa các thông tin cần thiết, ngoài ra không có bất kì thông tin phản hồi nào khác.
+Đối với các thông tin bị thiếu, thì để giá trị mặc định là "Chưa có thông tin".
+Đối với các thông tin đã có, trừ khi có thông tin mới của key đó thì mới được phép viết lại. Nếu không thì không được phép loại bỏ những thông tin đó.
+Các key tiếng anh phải được giữ nguyên.
+
+
+----------MẪU JSON-----------------
+{
+  "importDetail": [
+    {
+      "productName": "Tên sản phẩm",
+      "productCategory": Danh mục sản phẩm,
+      "unit": Đơn vị,
+      "origin": Xuất xứ,
+      "sellingPrice": Giá bán,
+      "currentStock": Kho hiện tại,
+      "importPrice": Giá nhập,
+      "discount": Phần trăm giảm giá,
+      "importAmount": Số lượng nhập thêm,
+    }
+  ],
+}
+-----------THÔNG TIN BẮT ĐẦU TỪ ĐÂY------------------------

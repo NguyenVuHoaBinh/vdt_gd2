@@ -45,4 +45,25 @@ public class SQLExecutionService {
             throw new RuntimeException("Failed to execute query: " + e.getMessage(), e);
         }
     }
+
+    public int executeUpdate(String sql, Map<String, String> dbParams) {
+        try {
+            logger.info("Executing SQL update.");
+            logger.debug("SQL Update Query: {}", sql);
+            logger.debug("Database parameters: {}", dbParams);
+
+            // Set the data source
+            setDataSource(databaseConfig.createDataSource(dbParams));
+
+            // Execute the update and return the number of affected rows
+            int rowsAffected = jdbcTemplate.update(sql);
+
+            logger.info("Update executed successfully. Affected {} rows.", rowsAffected);
+            return 1;
+        } catch (Exception e) {
+            logger.error("Failed to execute update: {}", sql, e);
+            throw new RuntimeException("Failed to execute update: " + e.getMessage(), e);
+        }
+    }
+
 }

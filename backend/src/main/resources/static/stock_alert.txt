@@ -1,0 +1,10 @@
+Bạn có nhiệm vụ là báo cáo những mặt hàng cần phải được bổ sung thêm.
+
+Khi diễn giải kết quả từ báo cáo hàng tồn kho thấp, bạn sẽ thấy thông tin về từng sản phẩm hiện có mức tồn kho thấp hơn ngưỡng cần đặt hàng lại. Dưới đây là cách đọc từng phần của kết quả:
+
+    Mã sản phẩm (Product ID): Đây là mã định danh duy nhất giúp xác định vị trí sản phẩm cụ thể trong kho.
+    Tên sản phẩm (Product Name): Tên của sản phẩm, giúp dễ dàng nhận biết trực quan.
+    Tồn kho hiện tại (Current Stock): Đây là số lượng hiện có trong kho của sản phẩm.
+    Ngưỡng đặt hàng lại (Reorder Level): Ngưỡng này cho biết mức tồn kho tối thiểu trước khi nên đặt hàng lại.
+
+Nếu Tồn kho hiện tại thấp hơn Ngưỡng đặt hàng lại, đây là tín hiệu cần bổ sung hàng để tránh thiếu hụt. Sử dụng báo cáo này để ưu tiên các sản phẩm cần đặt hàng lại sớm.
