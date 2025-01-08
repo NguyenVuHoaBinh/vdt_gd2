@@ -1,5 +1,6 @@
 package Viettel.backend.AdvanceRAG.service;
 
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.json.JsonData;
 import Viettel.backend.service.llmservice.EmbeddingService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -8,6 +9,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,6 +20,9 @@ public class SearchService {
 
     private final ElasticsearchClient elasticsearchClient;
     private final EmbeddingService embeddingService;
+
+    // @Autowired
+    // private OpenAIEmbeddingService openAIEmbeddingService;
 
     public SearchService(ElasticsearchClient elasticsearchClient, EmbeddingService embeddingService) {
         this.elasticsearchClient = elasticsearchClient;
@@ -30,6 +35,8 @@ public class SearchService {
             double[] queryEmbedding,
             int numCandidates,
             int numResults) throws IOException {
+
+        // dataForElasticsearch();
 
         // Validate input parameters
         if (queryEmbedding == null || queryEmbedding.length == 0) {
@@ -109,4 +116,43 @@ public class SearchService {
 
         return results;
     }
+
+//    public void dataForElasticsearch() {
+//        List<Map<String, Object>> books = List.of(
+//                Map.of(
+//                        "id", "1",
+//                        "name", "The Great Gatsby",
+//                        "authors_name", "F. Scott Fitzgerald",
+//                        "label", "Classic Literature",
+//                        "view", 1234
+//                ),
+//                Map.of(
+//                        "id", "2",
+//                        "name", "To Kill a Mockingbird",
+//                        "authors_name", "Harper Lee",
+//                        "label", "Historical Fiction",
+//                        "view", 5678
+//                )
+//        );
+//
+//        books.forEach(book -> {
+//            Map<String, Object> modifiableBook = new HashMap<>(book);  // Ensure map is mutable
+//            String text = modifiableBook.get("name") + " " + modifiableBook.get("authors_name") + " " + modifiableBook.get("label");
+//            double[] embedding = openAIEmbeddingService.getEmbedding(text);
+//            modifiableBook.put("vector_embedding", embedding);
+//
+//            // Index into Elasticsearch
+//            IndexRequest<Map<String, Object>> request = new IndexRequest.Builder<Map<String, Object>>()
+//                    .index("books")
+//                    .id(modifiableBook.get("id").toString())
+//                    .document(modifiableBook)
+//                    .build();
+//
+//            try {
+//                elasticsearchClient.index(request);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
+//    }
 }
