@@ -1,0 +1,33 @@
+version: "3"
+services:
+    redis-vector-db:
+        image: redis/redis-stack-server
+        container_name: "redis-vector-db"
+        command: ["redis-stack-server", "/etc/redis/redis.conf"]
+        volumes:
+            - ./redis/node-vector/data:/data
+            - ./redis/node-vector/conf/redis.conf:/etc/redis/redis.conf
+        ports:
+            - "6377:6379"
+        networks:
+            redis_network:
+                ipv4_address: 172.38.0.17
+
+    redis-insight:
+        image: redis/redisinsight:latest
+        restart: always
+        ports:
+            - "5540:5540"
+        volumes:
+            - redis-insight:/data
+
+networks:
+    redis_network:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.38.0.0/16
+                  gateway: 172.38.0.1
+
+volumes:
+    redis-insight:
