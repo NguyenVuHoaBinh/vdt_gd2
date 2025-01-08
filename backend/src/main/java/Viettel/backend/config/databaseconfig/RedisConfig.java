@@ -1,5 +1,6 @@
 package Viettel.backend.config.databaseconfig;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.ConnectionPoolConfig;
@@ -8,12 +9,18 @@ import redis.clients.jedis.JedisPoolConfig;
 
 @Configuration
 public class RedisConfig {
+    // Set up Redis host and port
+    @Value("${spring.redis.host}")
+    private String redisHost;
+
+    @Value("${spring.redis.port}")
+    private int redisPort;
+
+    @Value("${spring.redis.password}")
+    private String redisPassword;
 
     @Bean
     public JedisPooled jedisPooled() {
-        // Set up Redis host and port
-        String redisHost = "localhost";
-        int redisPort = 6377; // Replace with your Redis port
 
         // Configure Jedis connection pool settings
         ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
@@ -23,7 +30,6 @@ public class RedisConfig {
         poolConfig.setMaxWaitMillis(3000); // Maximum wait time for a connection from the pool (in ms)
         poolConfig.setBlockWhenExhausted(true); // Block if pool is exhausted until a connection is available
 
-        // Return a JedisPooled instance with the configured pool settings
-        return new JedisPooled(poolConfig, redisHost, redisPort);
+        return new JedisPooled(poolConfig, redisHost, redisPort, 5000, redisPassword);
     }
 }
