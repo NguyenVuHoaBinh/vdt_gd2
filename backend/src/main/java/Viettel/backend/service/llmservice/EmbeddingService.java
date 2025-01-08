@@ -26,7 +26,7 @@ public class EmbeddingService {
     private final OpenAiEmbeddingModel embeddingModel;
 
     OpenAiEmbeddingOptions options = OpenAiEmbeddingOptions.builder()
-            .withModel("text-embedding-ada-002")  // Using OpenAI's Ada embedding model
+            .model("text-embedding-ada-002")  // Using OpenAI's Ada embedding model
             .build();
 
     /**
