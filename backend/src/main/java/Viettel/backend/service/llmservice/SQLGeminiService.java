@@ -311,6 +311,11 @@ public class SQLGeminiService implements LLMServiceInterface {
         return "";
     }
 
+    @Override
+    public String ambiguousClarification(String message) {
+        return "";
+    }
+
 
     private String extractSQLQuery(String fullResponse) {
         // Similar extraction logic as OpenAiService

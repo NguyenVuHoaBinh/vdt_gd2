@@ -1,127 +1,151 @@
-[2024-12-04 17:49:14,691] INFO     {datahub.cli.ingest_cli:149} - DataHub CLI version: 0.14.1
-[2024-12-04 17:49:14,735] INFO     {datahub.ingestion.run.pipeline:271} - Sink configured successfully. DataHubRestEmitter: configured to talk to http://localhost:8080
-[2024-12-04 17:49:16,089] INFO     {datahub.ingestion.run.pipeline:295} - Source configured successfully.
-[2024-12-04 17:49:16,090] INFO     {datahub.cli.ingest_cli:130} - Starting metadata ingestion
-[2024-12-04 17:49:16,436] INFO     {datahub.cli.ingest_cli:143} - Finished metadata ingestion
+[2025-01-08 14:00:40,565] INFO     {datahub.cli.ingest_cli:149} - DataHub CLI version: 0.14.1
+[2025-01-08 14:01:08,926] ERROR    {datahub.entrypoints:218} - Command failed: Failed to configure the sink (datahub-rest): 💥 Failed to connect to DataHub with DataHubRestEmitter: configured to talk to http://localhost:8080
+Traceback (most recent call last):
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connection.py", line 174, in _new_conn
+    conn = connection.create_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/util/connection.py", line 95, in create_connection
+    raise err
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused
 
-Cli report:
-{'cli_version': '0.14.1',
- 'cli_entry_location': '/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/__init__.py',
- 'models_version': 'bundled',
- 'py_version': '3.11.0 (main, Sep 12 2024, 17:59:09) [GCC 11.4.0]',
- 'py_exec_path': '/home/binh/.pyenv/versions/3.11.0/bin/python3.11',
- 'os_details': 'Linux-6.8.0-49-generic-x86_64-with-glibc2.35',
- 'mem_info': '263.7 MB',
- 'peak_memory_usage': '263.7 MB',
- 'disk_info': {'total': '216.3 GB', 'used': '191.84 GB', 'used_initally': '191.84 GB', 'free': '13.4 GB'},
- 'peak_disk_usage': '191.84 GB',
- 'thread_count': 1,
- 'peak_thread_count': 2}
-Source (postgres) report:
-{'num_tables_fetch_sample_values_failed': 0,
- 'num_tables_classification_attempted': 0,
- 'num_tables_classification_failed': 0,
- 'num_tables_classification_found': 0,
- 'info_types_detected': {},
- 'events_produced': 43,
- 'events_produced_per_sec': 44,
- 'entities': {'container': ['urn:li:container:e8fe5e9af9944b3c9b73e2e0ae70d218', 'urn:li:container:a06e5a36c42c70147aac3b7452cdfad0'],
-              'dataset': ['urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectdefinition,PROD)',
-                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectfield,PROD)',
-                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.payment,PROD)',
-                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.debt,PROD)',
-                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice_detail,PROD)',
-                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.customer,PROD)',
-                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice,PROD)',
-                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.products,PROD)']},
- 'aspects': {'container': {'containerProperties': 2, 'status': 2, 'dataPlatformInstance': 2, 'subTypes': 2, 'browsePathsV2': 2, 'container': 1},
-             'dataset': {'container': 8, 'status': 8, 'datasetProperties': 8, 'schemaMetadata': 8, 'subTypes': 8, 'browsePathsV2': 8}},
- 'aspect_urn_samples': {'container': {'containerProperties': ['urn:li:container:e8fe5e9af9944b3c9b73e2e0ae70d218',
-                                                              'urn:li:container:a06e5a36c42c70147aac3b7452cdfad0'],
-                                      'status': ['urn:li:container:e8fe5e9af9944b3c9b73e2e0ae70d218',
-                                                 'urn:li:container:a06e5a36c42c70147aac3b7452cdfad0'],
-                                      'dataPlatformInstance': ['urn:li:container:e8fe5e9af9944b3c9b73e2e0ae70d218',
-                                                               'urn:li:container:a06e5a36c42c70147aac3b7452cdfad0'],
-                                      'subTypes': ['urn:li:container:e8fe5e9af9944b3c9b73e2e0ae70d218',
-                                                   'urn:li:container:a06e5a36c42c70147aac3b7452cdfad0'],
-                                      'browsePathsV2': ['urn:li:container:e8fe5e9af9944b3c9b73e2e0ae70d218',
-                                                        'urn:li:container:a06e5a36c42c70147aac3b7452cdfad0'],
-                                      'container': ['urn:li:container:a06e5a36c42c70147aac3b7452cdfad0']},
-                        'dataset': {'container': ['urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectdefinition,PROD)',
-                                                  'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectfield,PROD)',
-                                                  'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.payment,PROD)',
-                                                  'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.debt,PROD)',
-                                                  'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice_detail,PROD)',
-                                                  'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.customer,PROD)',
-                                                  'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice,PROD)',
-                                                  'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.products,PROD)'],
-                                    'status': ['urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectdefinition,PROD)',
-                                               'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectfield,PROD)',
-                                               'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.payment,PROD)',
-                                               'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.debt,PROD)',
-                                               'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice_detail,PROD)',
-                                               'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.customer,PROD)',
-                                               'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice,PROD)',
-                                               'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.products,PROD)'],
-                                    'datasetProperties': ['urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectdefinition,PROD)',
-                                                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectfield,PROD)',
-                                                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.payment,PROD)',
-                                                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.debt,PROD)',
-                                                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice_detail,PROD)',
-                                                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.customer,PROD)',
-                                                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice,PROD)',
-                                                          'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.products,PROD)'],
-                                    'schemaMetadata': ['urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectdefinition,PROD)',
-                                                       'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectfield,PROD)',
-                                                       'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.payment,PROD)',
-                                                       'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.debt,PROD)',
-                                                       'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice_detail,PROD)',
-                                                       'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.customer,PROD)',
-                                                       'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice,PROD)',
-                                                       'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.products,PROD)'],
-                                    'subTypes': ['urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectdefinition,PROD)',
-                                                 'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectfield,PROD)',
-                                                 'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.payment,PROD)',
-                                                 'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.debt,PROD)',
-                                                 'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice_detail,PROD)',
-                                                 'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.customer,PROD)',
-                                                 'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice,PROD)',
-                                                 'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.products,PROD)'],
-                                    'browsePathsV2': ['urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectdefinition,PROD)',
-                                                      'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.objectfield,PROD)',
-                                                      'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.payment,PROD)',
-                                                      'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.debt,PROD)',
-                                                      'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice_detail,PROD)',
-                                                      'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.customer,PROD)',
-                                                      'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.invoice,PROD)',
-                                                      'urn:li:dataset:(urn:li:dataPlatform:postgres,vpos.public.products,PROD)']}},
- 'soft_deleted_stale_entities': [],
- 'last_state_non_deletable_entities': [],
- 'tables_scanned': 8,
- 'views_scanned': 0,
- 'entities_profiled': 0,
- 'filtered': ['information_schema.*'],
- 'num_view_definitions_parsed': 0,
- 'num_view_definitions_failed_parsing': 0,
- 'num_view_definitions_failed_column_parsing': 0,
- 'view_definitions_parsing_failures': [],
- 'start_time': '2024-12-04 17:49:15.764665 (now)',
- 'running_time': '0.97 seconds',
- 'failures': [],
- 'warnings': [],
- 'infos': []}
-Sink (datahub-rest) report:
-{'total_records_written': 46,
- 'records_written_per_second': 22,
- 'warnings': [],
- 'failures': [],
- 'start_time': '2024-12-04 17:49:14.731352 (2.01 seconds ago)',
- 'current_time': '2024-12-04 17:49:16.740092 (now)',
- 'total_duration_in_seconds': 2.01,
- 'max_threads': 15,
- 'gms_version': 'v0.15.0rc2',
- 'pending_requests': 0,
- 'async_batches_split': 0,
- 'main_thread_blocking_timer': '0.294 seconds'}
+During handling of the above exception, another exception occurred:
 
-Pipeline finished successfully; produced 46 events in 0.97 seconds.
+Traceback (most recent call last):
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connectionpool.py", line 416, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connection.py", line 244, in request
+    super(HTTPConnection, self).request(method, url, body=body, headers=headers)
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/http/client.py", line 1282, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/http/client.py", line 1328, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/http/client.py", line 1277, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/http/client.py", line 1037, in _send_output
+    self.send(msg)
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/http/client.py", line 975, in send
+    self.connect()
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connection.py", line 205, in connect
+    conn = self._new_conn()
+           ^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connection.py", line 186, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x786238336650>: Failed to establish a new connection: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connectionpool.py", line 830, in urlopen
+    return self.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connectionpool.py", line 830, in urlopen
+    return self.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connectionpool.py", line 830, in urlopen
+    return self.urlopen(
+           ^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /config (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x786238336650>: Failed to establish a new connection: [Errno 111] Connection refused'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/sink/datahub_rest.py", line 118, in __post_init__
+    gms_config = self.emitter.get_server_config()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/emitter/rest_emitter.py", line 197, in get_server_config
+    self.test_connection()
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/emitter/rest_emitter.py", line 172, in test_connection
+    response = self._session.get(url)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/requests/sessions.py", line 602, in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/requests/adapters.py", line 700, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /config (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x786238336650>: Failed to establish a new connection: [Errno 111] Connection refused'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/run/pipeline.py", line 136, in _add_init_error_context
+    yield
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/run/pipeline.py", line 269, in __init__
+    self.sink = sink_class.create(sink_config, self.ctx)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/api/sink.py", line 116, in create
+    return cls(ctx, cls.get_config_class().parse_obj(config_dict))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/api/sink.py", line 109, in __init__
+    self.__post_init__()
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/sink/datahub_rest.py", line 120, in __post_init__
+    raise ConfigurationError(
+datahub.configuration.common.ConfigurationError: 💥 Failed to connect to DataHub with DataHubRestEmitter: configured to talk to http://localhost:8080
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/entrypoints.py", line 205, in main
+    sys.exit(datahub(standalone_mode=False, **kwargs))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/telemetry/telemetry.py", line 462, in wrapper
+    raise e
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/telemetry/telemetry.py", line 411, in wrapper
+    res = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/cli/ingest_cli.py", line 206, in run
+    ret = loop.run_until_complete(run_ingestion_and_check_upgrade())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/asyncio/base_events.py", line 650, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/cli/ingest_cli.py", line 176, in run_ingestion_and_check_upgrade
+    pipeline = Pipeline.create(
+               ^^^^^^^^^^^^^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/run/pipeline.py", line 419, in create
+    return cls(
+           ^^^^
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/run/pipeline.py", line 267, in __init__
+    with _add_init_error_context(f"configure the sink ({self.sink_type})"):
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/contextlib.py", line 155, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/home/binh/.pyenv/versions/3.11.0/lib/python3.11/site-packages/datahub/ingestion/run/pipeline.py", line 140, in _add_init_error_context
+    raise PipelineInitError(f"Failed to {step}: {e}") from e
+datahub.ingestion.run.pipeline.PipelineInitError: Failed to configure the sink (datahub-rest): 💥 Failed to connect to DataHub with DataHubRestEmitter: configured to talk to http://localhost:8080

@@ -1,4 +1,5 @@
 Nhiệm vụ của bạn là chuyển hóa thông tin sau thành những câu nói để nói một cách rõ ràng, mạch lạc nhất, ngắn gọn và đầy đủ thông tin nhất có thể. Các thông tin phải được đầy đủ.
+Tất cẩ thông tin đầu vào còn lại sẽ giữ nguyên văn bản.
 Một số lưu ý:
     _ đ sẽ gọi là đồng.
     _ 12.000 sẽ gọi là mười hai nghìn. Tương tự với những số khác.

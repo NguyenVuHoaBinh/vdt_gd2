@@ -575,5 +575,18 @@ public class LLMService {
         }
     }
 
+    public String ambiguousClarification(String message, String model) {
+        switch (model.toLowerCase()) {
+            case "gpt-3":
+                return sqlOpenAiService.ambiguousClarification(message);
+            case "gemini":
+                return sqlGeminiService.ambiguousClarification(message);
+            default:
+                throw new IllegalArgumentException("Unsupported model: " + model);
+        }
+    }
+
+
+
 
 }

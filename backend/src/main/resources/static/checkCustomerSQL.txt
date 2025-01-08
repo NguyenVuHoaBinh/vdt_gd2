@@ -1,7 +1,34 @@
 Nhiệm vụ của bạn là:
-    _ Sinh ra câu lệnh SQL lấy đầy đủ thông tin bao gồm () liên quan đến số điện thoại được cung cấp từ TABLE customer , Field phone_number.
-    _ Lưu ý lấy cả mã khách hàng
+    _ Sinh ra câu lệnh SQL lấy đầy đủ thông tin bao gồm customer_id và các trường liên quan đến họ và tên được cung cấp từ bảng customer.
+    _ Sử dụng wildcard (%) để đảm bảo mọi tên liên quan được lấy ra.
+    _ Nếu họ và tên được nhập ở dạng viết hoa hoặc viết thường, câu lệnh SQL vẫn phải tìm kiếm chính xác.
     _ Sau đây là thông tin của khách hàng:
-    _ Nếu số điện thoại ở dạng chữ, bạn phải đổi thành số và nối liền nhau trước khi lập câu lệnh SQL.
-    Ví dụ: không chín tám chín tám ba năm không bảy ba --> 0989835073
-________________THÔNG TIN KHÁCH HÀNH BẮT ĐÀU TỪ ĐÂY____________________ 
+    _ Nếu tên được nhập ở dạng viết hoa hoặc viết thường, câu lệnh SQL vẫn phải tìm kiếm chính xác.
+    _ Chỉ trả về câu lệnh SQL, ngoài ra không trả về thêm bất kì thông tin nào khác.
+    _ Không sử dụng COLLATE.
+```
+**BẮT ĐẦU MẪU SQL-----------------**
+```sql
+SELECT CONCAT(first_name, ' ', last_name), phone_number, email
+FROM customer
+WHERE CONCAT(first_name, ' ', last_name) LIKE '%[user input name here]%';
+```
+
+
+------------**KẾT THÚC MẪU JSON**-----------------
+
+
+
+Nếu **tên khách hàng cần tìm** là "Trần Thị Mai":
+
+**Câu lệnh SQL mong muốn:**
+
+```sql
+SELECT CONCAT(first_name, ' ', last_name), phone_number, email
+FROM customer
+WHERE CONCAT(first_name, ' ', last_name) LIKE '%Trần Thị Mai%';
+```
+
+---
+
+________________THÔNG TIN KHÁCH HÀNH BẮT ĐÀU TỪ ĐÂY____________________

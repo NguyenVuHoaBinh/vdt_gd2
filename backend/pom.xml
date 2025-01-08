@@ -122,15 +122,17 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-			<version>3.3.3</version>
+			<version>3.4.0</version>
 		</dependency>
+
 
 		<!-- https://mvnrepository.com/artifact/co.elastic.clients/elasticsearch-java -->
 		<dependency>
 			<groupId>co.elastic.clients</groupId>
 			<artifactId>elasticsearch-java</artifactId>
-			<version>8.15.0</version>
+			<version>8.16.1</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/com.knuddels/jtokkit -->
 		<dependency>
 			<groupId>com.knuddels</groupId>

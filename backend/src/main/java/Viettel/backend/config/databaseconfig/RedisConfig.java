@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.JedisPoolConfig;
 
 @Configuration
 public class RedisConfig {

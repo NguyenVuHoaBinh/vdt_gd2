@@ -63,6 +63,7 @@ public interface LLMServiceInterface {
     String mydioAnalysis(String message);
     String mydioStart(String message);
     String ambiguousDetection(String message);
+    String ambiguousClarification(String message);
 
 
 }

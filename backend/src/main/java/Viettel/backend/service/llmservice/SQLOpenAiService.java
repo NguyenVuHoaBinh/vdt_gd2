@@ -1001,7 +1001,7 @@ public class SQLOpenAiService implements LLMServiceInterface {
                 Map.of("role", "system", "content", role),
                 Map.of("role", "user", "content", message)
         ));
-        requestBody.put("max_tokens", 600);
+        requestBody.put("max_tokens", 2000);
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
@@ -1042,7 +1042,7 @@ public class SQLOpenAiService implements LLMServiceInterface {
                 Map.of("role", "system", "content", role),
                 Map.of("role", "user", "content", message)
         ));
-        requestBody.put("max_tokens", 600);
+        requestBody.put("max_tokens", 2000);
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
@@ -1652,7 +1652,7 @@ public class SQLOpenAiService implements LLMServiceInterface {
                 Map.of("role", "system", "content", role),
                 Map.of("role", "user", "content", message)
         ));
-        requestBody.put("max_tokens", 1000);
+        requestBody.put("max_tokens", 2000);
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
@@ -1959,7 +1959,46 @@ public class SQLOpenAiService implements LLMServiceInterface {
         headers.setBearerAuth(openAiApiKey);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gpt-4o-mini"); requestBody.put("temperature", 0.1);
+        requestBody.put("model", "gpt-4o"); requestBody.put("temperature", 0.1);
+        requestBody.put("messages", List.of(
+                Map.of("role", "system", "content", role),
+                Map.of("role", "user", "content", message)
+        ));
+        requestBody.put("max_tokens", 1000);
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
+            if (choices != null && !choices.isEmpty()) {
+                Map<String, Object> firstChoice = choices.get(0);
+                Map<String, Object> messageMap = (Map<String, Object>) firstChoice.get("message");
+                String fullResponse = (String) messageMap.get("content");
+
+                return fullResponse;
+            }
+        } else {
+            throw new RuntimeException("Failed to get response from OpenAI");
+        }
+        return null;
+    }
+
+    @Override
+    public String ambiguousClarification(String message) {
+        String role = "";
+        try {
+            String filePath = "src/main/resources/static/ambiguousClarification.txt"; // Update with the correct path to your file
+            role = new String(Files.readAllBytes(Paths.get(filePath)));
+            System.out.println(role);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String url = "https://api.openai.com/v1/chat/completions";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-4o"); requestBody.put("temperature", 0.1);
         requestBody.put("messages", List.of(
                 Map.of("role", "system", "content", role),
                 Map.of("role", "user", "content", message)

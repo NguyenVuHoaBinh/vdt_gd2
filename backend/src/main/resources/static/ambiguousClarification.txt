@@ -1,0 +1,18 @@
+Based on data provide and user request. complete the json below. Just return the json and no explain. DO NOT ADD ANY COMMENT.
+the value must be the same in the provided data. if there is no data for that field then dont write that field.
+
+{
+  "ambiguous": false,
+  "resolvedQuestion": {
+    "question": "Your ambiguous question here.",
+    "selectedOption": {
+      "id": "unique_option_identifier_1",
+      "label": "Readable option text (e.g., Product name and details)",
+      "details": {
+        "key1": "value1",
+        "key2": "value2",
+        "keyN": "valueN"
+      }
+    }
+  }
+}

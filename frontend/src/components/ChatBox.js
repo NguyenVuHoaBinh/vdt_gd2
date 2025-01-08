@@ -26,7 +26,17 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
   const chatRef = useRef(null);
   const typingTimeoutRef = useRef(null); // Ref for managing the typing timeout
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ambiguousQuestions, setAmbiguousQuestions] = useState([]);
 
+  
+  
+  useEffect(() => {
+    console.log('ambiguousQuestions updated:', ambiguousQuestions);
+  }, [ambiguousQuestions]);
+  
+  
+  
+  
 
   const {
     transcript,
@@ -38,6 +48,8 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
   if (!browserSupportsSpeechRecognition) {
     return <span>Browser doesn't support speech recognition.</span>;
   }
+
+  
 
   // Helper function to generate a table from the query result
   const generateTable = (data) => {
@@ -101,8 +113,6 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
     },
     [chatLog, model, modelType, sessionId, connected, setChatLog, isSubmitting, resetTranscript] // Ensure all dependencies are included
   );
-  
-  
 
 
   
@@ -118,15 +128,18 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
   
       console.log('API response status:', response.status);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  
       const result = await response.json();
       console.log('API response result:', result);
   
       const messages = [];
   
+      // Handle fullResponse
       if (result.fullResponse?.trim()) {
         messages.push({ text: result.fullResponse, user: 'bot' });
       }
   
+      // Handle SQL queries
       if (result.sqlQuery?.trim()) {
         messages.push({
           text: `**SQL Query:**\n\`\`\`sql\n${result.sqlQuery}\n\`\`\``,
@@ -134,6 +147,7 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
         });
       }
   
+      // Handle query results as a table
       if (Array.isArray(result.queryResult) && result.queryResult.length > 0) {
         const table = generateTable(result.queryResult);
         messages.push({ text: `**Result:**\n${table}`, user: 'bot' });
@@ -143,136 +157,120 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
       console.log('Adding messages with delay:', messages);
       addMessagesWithDelay(messages, 1000);
   
-      // Check if audio data is available
+      // Handle audio response
       if (result.audio) {
         console.log('Audio data found, playing audio.');
-        // Stop listening before playing audio
         SpeechRecognition.stopListening();
-        // Decode Base64 audio and play it
-        const audioBase64 = result.audio;
-        const audioBlob = new Blob([new Uint8Array(atob(audioBase64).split('').map(c => c.charCodeAt(0)))], { type: 'audio/wav' });
+        const audioBlob = new Blob([new Uint8Array(atob(result.audio).split('').map(c => c.charCodeAt(0)))], { type: 'audio/wav' });
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         audio.play();
-        // Automatically play the audio
         audio.addEventListener('ended', () => {
           URL.revokeObjectURL(audioUrl);
-          // Restart listening after the audio ends
           SpeechRecognition.startListening({ continuous: true });
         });
       }
-
-      // Update bill information if provided
+  
+      // Helper function to clear other states
+      const clearAllStates = () => {
+        setBillInfo(null);
+        setProductInfo(null);
+        setProductAdjust(null);
+        setBusinessInfo(null);
+        setDebtInfo(null);
+        setInactiveInfo(null);
+        setRestockAlertInfo(null);
+        setTrendInfo(null);
+      };
+  
+      // Handle different types of information
       if (result.billInfo) {
         console.log('Updating bill info:', result.billInfo);
-        // Clear other states
-        setRestockAlertInfo(null);
-        setProductInfo(null);
-        setProductAdjust(null);
-        setBusinessInfo(null);
-        setDebtInfo(null);
-        setInactiveInfo(null);
-        setTrendInfo(null);
+        clearAllStates();
         setBillInfo(result.billInfo);
       }
-      
+  
       if (result.productInfo) {
         console.log('Updating product info:', result.productInfo);
-        // Clear other states
-        setBillInfo(null);
-        setRestockAlertInfo(null);
-        setProductAdjust(null);
-        setBusinessInfo(null);
-        setDebtInfo(null);
-        setInactiveInfo(null);
-        setTrendInfo(null);
+        clearAllStates();
         setProductInfo(result.productInfo);
       }
-      
+  
       if (result.productAdjust) {
         console.log('Updating product adjust info:', result.productAdjust);
-        // Clear other states
-        setBillInfo(null);
-        setProductInfo(null);
-        setRestockAlertInfo(null);
-        setBusinessInfo(null);
-        setDebtInfo(null);
-        setInactiveInfo(null);
-        setTrendInfo(null);
+        clearAllStates();
         setProductAdjust(result.productAdjust);
       }
-      
+  
       if (result.businessInfo) {
         console.log('Updating business info:', result.businessInfo);
-        // Clear other states
-        setBillInfo(null);
-        setRestockAlertInfo(null);
-        setProductInfo(null);
-        setProductAdjust(null);
-        setDebtInfo(null);
-        setInactiveInfo(null);
-        setTrendInfo(null);
+        clearAllStates();
         setBusinessInfo(result.businessInfo);
       }
-      
+  
       if (result.debtInfo) {
-        console.log('Updating bill info:', result.billInfo);
-        // Clear other states
-        setProductInfo(null);
-        setProductAdjust(null);
-        setRestockAlertInfo(null);
-        setBusinessInfo(null);
-        setBillInfo(null);
-        setInactiveInfo(null);
-        setTrendInfo(null);
+        console.log('Updating debt info:', result.debtInfo);
+        clearAllStates();
         setDebtInfo(result.debtInfo);
       }
-
+  
       if (result.inactiveInfo) {
-        console.log('Updating bill info:', result.billInfo);
-        // Clear other states
-        setProductInfo(null);
-        setProductAdjust(null);
-        setRestockAlertInfo(null);
-        setBusinessInfo(null);
-        setBillInfo(null);
-        setDebtInfo(null);
-        setTrendInfo(null);
+        console.log('Updating inactive info:', result.inactiveInfo);
+        clearAllStates();
         setInactiveInfo(result.inactiveInfo);
       }
-
+  
       if (result.restockAlertInfo) {
-        console.log('Updating bill info:', result.billInfo);
-        // Clear other states
-        setProductInfo(null);
-        setProductAdjust(null);
+        console.log('Updating restock alert info:', result.restockAlertInfo);
+        clearAllStates();
         setRestockAlertInfo(result.restockAlertInfo);
-        setBusinessInfo(null);
-        setBillInfo(null);
-        setDebtInfo(null);
-        setInactiveInfo(null);
-        setTrendInfo(null);
       }
-
+  
       if (result.trendInfo) {
-        setProductInfo(null);
-        setProductAdjust(null);
-        setRestockAlertInfo(null);
-        setBusinessInfo(null);
-        setBillInfo(null);
-        setDebtInfo(null);
-        setInactiveInfo(null);
+        console.log('Updating trend info:', result.trendInfo);
+        clearAllStates();
         setTrendInfo(result.trendInfo);
       }
   
+      // Handle ambiguousInfo
+      if (result.ambiguousInfo) {
+        console.log('Handling ambiguousInfo:', result.ambiguousInfo);
+      
+        const ambiguousData = JSON.parse(result.ambiguousInfo);
+      
+        if (ambiguousData.ambiguous === true) {
+          // Add a new ambiguous question
+          setAmbiguousQuestions((prev) => [
+            ...prev,
+            { ...ambiguousData.ambiguousQuestion, resolved: false },
+          ]);
+        } else if (ambiguousData.ambiguous === false) {
+          console.log('Marking last ambiguous question as resolved with selected option.');
+          // Mark the last ambiguous question as resolved and store the selected option (if available)
+          setAmbiguousQuestions((prev) =>
+            prev.map((question, index) =>
+              index === prev.length - 1
+                ? {
+                    ...question,
+                    resolved: true,
+                    selectedOption: ambiguousData.resolvedQuestion?.selectedOption || null, // Default to null if missing
+                  }
+                : question
+            )
+          );
+        }        
+      }
+  
     } catch (error) {
-      console.error('Error with API models:', error);
+      
       setChatLog((prevChatLog) => [
         ...prevChatLog,
-        { user: 'bot', text: 'Error with API model response' },
+        
       ]);
     }
   };
+  
+  
 
   const addMessagesWithDelay = (messages, delay) => {
     console.log('addMessagesWithDelay called with messages and delay:', messages, delay);
@@ -313,7 +311,7 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
           handleChatSubmit(transcript);
           SpeechRecognition.stopListening(); // Reset the transcript after sending the message
         }
-      }, 1000); // Set to 2000 milliseconds (2 seconds)
+      }, 3000); // Set to 2000 milliseconds (2 seconds)
     }
   }, [listening, transcript, handleChatSubmit]);
   
@@ -410,6 +408,57 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
         
       </div>
       <div style={styles.infoContainer}>
+
+      <div>
+  <h3>Thông tin bổ sung</h3>
+  {ambiguousQuestions.length > 0 ? (
+    ambiguousQuestions.map((question, index) => (
+      <div key={index} style={{ marginBottom: '20px' }}>
+        {/* Question Display */}
+        <p
+          style={{
+            fontWeight: 'bold',
+            textDecoration: question.resolved ? 'none' : 'none',
+            color: question.resolved ? 'blue' : 'black',
+          }}
+        >
+          {question.question}
+        </p>
+
+        {/* Options for unresolved questions */}
+        {!question.resolved && question.options && (
+          <ul>
+            {question.options.map((option, optIndex) => (
+              <li key={optIndex}>{option.label}</li>
+            ))}
+          </ul>
+        )}
+
+        {/* Selected Option for resolved questions */}
+        {question.resolved && question.selectedOption && (
+          <div style={{ marginTop: '10px', backgroundColor: 'lightblue', padding: '10px', borderRadius: '5px' }}>
+            <strong>Đã chọn:</strong>
+            <p>{question.selectedOption.label}</p>
+            <ul>
+              {Object.entries(question.selectedOption.details).map(([key, value]) => (
+                <li key={key}>
+                  <strong>{key}:</strong> {value}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    ))
+  ) : (
+    <p>Không có câu hỏi mơ hồ</p>
+  )}
+</div>
+
+
+
+
+
         <div style={styles.newInfoContainer}>
 
       {billInfo ? (
@@ -706,17 +755,10 @@ const ChatBox = ({ model, modelType, sessionId, connected, chatLog, setChatLog }
         <p></p>
       )}  
       </div>
-      <div style={styles.ambiguousInfoContainer}>
-      <h3>Thông tin không rõ ràng</h3>
-          {ambiguousInfo ? (
-            <div style={styles.infoContent}>
-              <h3>Thông tin không rõ ràng</h3>
-              <p>{ambiguousInfo}</p>
-            </div>
-          ) : (
-            <p></p>
-          )}
-        </div>
+
+
+
+
       </div>
     </div>
   );
@@ -756,12 +798,12 @@ const styles = {
     height: '100%',
   },
   newInfoContainer: {
-    flex: 7,
+    flex: 5,
     padding: '10px',
     borderBottom: '1px solid #ccc',
   },
   ambiguousInfoContainer: {
-    flex: 3,
+    flex: 5,
     padding: '10px',
   },
   chatMessages: {

@@ -7,7 +7,7 @@ Keywords and criteria:
     ORDER: For messages about creating, updating, or managing an order.
     INVOICE: For messages involving generating, viewing, or querying an invoice, or intentions like "Cảm ơn bạn! Vậy bây giờ tôi sẽ lập hóa đơn cho bạn." Include any mentions of discounts related to invoices.
     CHECK_CUSTOMER: For checking customer information or requests like "Vui lòng cho biết tên và số điện thoại của bạn."
-    CREATE_CUSTOMER: For creating customer information or prompts like "Quý khách có muốn tạo tài khoản thành viên mới không?"
+    CREATE_CUSTOMER: For creating customer information, create account or prompts like "Quý khách có muốn tạo tài khoản thành viên mới không?"
     CHECK_PAYMENT: For messages about making a payment or similar prompts like "Bạn có muốn tiến tới thanh toán không?" or "Tiến tới thanh toán".
     IMMEDIATELY_PAYMENT: For immediate payment messages or specifying payment methods (cash, QR code, credit card).
     DEBT: For users wanting to delay payment, indicating debt, or similar to (ghi nợ) with associated details (e.g., due_date).

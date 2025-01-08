@@ -99,6 +99,11 @@ public class ShoppingChatController_v2 {
     @Autowired
     private viAnController viancontroller;
 
+    Boolean ambiguousState = false;
+
+
+
+
 
     private final Map<String, String> dbParamsStore = new HashMap<>();
     private JdbcTemplate jdbcTemplate;
@@ -113,7 +118,7 @@ public class ShoppingChatController_v2 {
     //
     @PostMapping("/v2/vPOS_connect")
     public Map<String, Object> connect(@RequestBody Map<String, String> dbParams) {
-        logger.info("Starting connection process for session ID: {}", dbParams.get("sessionId"));
+
 
         Map<String, Object> response = new HashMap<>();
         try {
@@ -172,7 +177,7 @@ public class ShoppingChatController_v2 {
                 metadataDocument.setChunkTokenCount((Integer) doc.get("chunk_token_count"));
                 metadataDocument.setEmbedding((double[]) doc.get("embedding"));
 
-                elasticsearchService.indexMetadataDocument(indexName, metadataDocument.getId(), metadataDocument);
+                //elasticsearchService.indexMetadataDocument(indexName, metadataDocument.getId(), metadataDocument);
             }
 
             response.put("sessionId", sessionId);
@@ -209,6 +214,9 @@ public class ShoppingChatController_v2 {
         LocalDate currentDate = LocalDate.now();
         ObjectMapper objectMapper = new ObjectMapper();
 
+
+        Map<String, String> ambiguousInfoMap = new HashMap<>();
+        ambiguousInfoMap.put("ambiguous", "NONAMBIGUOUS");
 
 
 
@@ -277,7 +285,7 @@ public class ShoppingChatController_v2 {
             // Task analysis
             //TODO: APPLY WITH ReAct
             // TODO: CREATE STORED PROCEDURE
-            int maxM = 1; // Define a suitable limit
+            int maxM = 4; // Define a suitable limit
             List<String> lastChats = previousChats.stream()
                     .skip(Math.max(0, previousChats.size() - maxM))
                     .collect(Collectors.toList());
@@ -307,25 +315,59 @@ public class ShoppingChatController_v2 {
 
                     break;
                 case "order":
-                    String processedOrder = llmService.processOrder(combinedPrompt, model);
-                    chatMemoryService.storeUserChat(sessionId, "assistant", processedOrder);
-                    String isOrderCheck = llmService.isOrder(processedOrder,model);
-                    if(isOrderCheck.toLowerCase().contains("true")) {
-                        chatMemoryService.storeEntityData(sessionId, FINAL_ORDER, processedOrder);
-                    }
-                    //TODO:Add speech
-                    String oOriginalSpeech = llmService.audioSmoothTranslation(processedOrder, model);
-                    String pSpeech = viancontroller.sendTextVIAN(oOriginalSpeech);
-                    result.put("audio", pSpeech);
-                    result.put("fullResponse", processedOrder);
+                    //Step 1: Gather all required data for processing order.
+                    String detailOrderInformation = "\n Đây là dữ liệu sản phẩm hiện tại: \n"
+                            + sqlqueryResult
+                            + "\n Đây là lịch sử cuộc hội thoại: \n"+
+                            conversationHistory
+                            + "\n Đây là yêu cầu của khách hàng: \n"+
+                            message;
 
-                    //TODO: add json infobill
-                    String oIsOrder = llmService.isOrder(processedOrder,model);
-                    if(oIsOrder.equalsIgnoreCase("true")){
-                        String oJsonString = llmService.jsonConverter(processedOrder,model);
-                        JsonNode ojsonNode = objectMapper.readTree(oJsonString);
-                        chatMemoryService.storeEntityData(sessionId,FINAL_JSON,ojsonNode.toString());
-                        result.put("billInfo",ojsonNode);
+                    //Step 2: Check for ambiguous information
+                    String ambiguousOrderInformation = llmService.ambiguousDetection(detailOrderInformation,model);
+                    if(ambiguousOrderInformation.equalsIgnoreCase("NONAMBIGUOUS") || ambiguousState.booleanValue()==true){
+                        String processedOrder = llmService.processOrder(combinedPrompt, model);
+                        chatMemoryService.storeUserChat(sessionId, "assistant", processedOrder);
+                        String isOrderCheck = llmService.isOrder(processedOrder,model);
+                        if(isOrderCheck.toLowerCase().contains("true")) {
+                            chatMemoryService.storeEntityData(sessionId, FINAL_ORDER, processedOrder);
+                        }
+
+                        if(processedOrder.contains("Cảm ơn")){
+                            String pSpeech = viancontroller.sendTextVIAN(processedOrder);
+                            result.put("audio", pSpeech);
+                            result.put("fullResponse", processedOrder);
+                        }
+                        else{
+                            String completeOrder = "Tôi đã thêm sản phẩm vào giỏ hàng của bạn. Bạn có muốn mua thêm gì không?";
+                            String pSpeech = viancontroller.sendTextVIAN(completeOrder);
+                            result.put("audio", pSpeech);
+                            result.put("fullResponse", completeOrder);
+                            String ambiguousClarification = "\n Đây là lịch sử cuộc hội thoại: \n"+
+                                    conversationHistory;
+                            String jsonOrderClarification = llmService.ambiguousClarification(ambiguousClarification,model);
+                            result.put("ambiguousInfo",jsonOrderClarification);
+
+
+                            ambiguousState = false;
+
+                            String oIsOrder = llmService.isOrder(processedOrder,model);
+                            if(oIsOrder.equalsIgnoreCase("true")){
+                                String oJsonString = llmService.jsonConverter(processedOrder,model);
+                                JsonNode ojsonNode = objectMapper.readTree(oJsonString);
+                                chatMemoryService.storeEntityData(sessionId,FINAL_JSON,ojsonNode.toString());
+                                result.put("billInfo",ojsonNode);
+                        }
+                    }}else {
+
+                        String ambiguousOrderResponse = "Tôi thấy có nhiều sản phẩm tương tự, vui lòng chọn sản phẩm bạn mong muốn";
+                        String ambiguousOrderSpeech = viancontroller.sendTextVIAN(ambiguousOrderResponse);
+                        chatMemoryService.storeUserChat(sessionId, "assistant", ambiguousOrderResponse+ "\n Data: "+ ambiguousOrderInformation ) ;
+                        ambiguousState = true;
+
+                        result.put("fullResponse",ambiguousOrderResponse );
+                        result.put("ambiguousInfo", ambiguousOrderInformation);
+                        result.put("audio", ambiguousOrderSpeech);
                     }
                     break;
                 case "check_customer":
@@ -335,7 +377,7 @@ public class ShoppingChatController_v2 {
                     //TODO: search customer on elastic using hybrid search
                     String databaseCheck = "\nThis is the information of customer retrieved from the database\n";
                     String customerInfoSQL  = llmService.checkCustomer(lastHistory,model);
-                    List<Map<String, Object>> customerResult = (List<Map<String, Object>>) sqlExecutionService.executeQuery(customerInfoSQL, dbParams);
+                    List<Map<String, Object>> customerResult = sqlExecutionService.executeQuery(customerInfoSQL, dbParams);
                     if(customerResult.isEmpty()){
                         databaseCheck = databaseCheck + "Customer is not found!";
                     }else{
@@ -343,29 +385,60 @@ public class ShoppingChatController_v2 {
                         chatMemoryService.storeEntityData(sessionId, FINAL_CUSTOMER_INFO, String.valueOf(customerResult));
 
                     }
-                    Map<String, String>  CustomerInfo = llmService.createCustomerSQL(lastHistory + databaseCheck,model);
-                    chatMemoryService.storeUserChat(sessionId, "assistant", CustomerInfo.get("fullResponse"));
 
-                    //TODO:Add speech
-                    String ccOriginalSpeech = llmService.audioSmoothTranslation(CustomerInfo.get("fullResponse"), model);
-                    String ccSpeech = viancontroller.sendTextVIAN(ccOriginalSpeech);
-                    result.put("audio", ccSpeech);
+                    if(customerResult.size()>=2 && !ambiguousState){
+                        String detailCustomerInformation = "\n Đây là dữ liệu khách hàng hiện tại: \n"
+                                + customerResult
+                                + "\n Đây là lịch sử cuộc hội thoại: \n"+
+                                lastHistory
+                                + "\n Nhiệm vụ của bạn là hỏi thông tin khách hàng nào trong phần dữ liệu hiện tại là chính xác. \n";
 
-                    result.put("fullResponse", CustomerInfo.get("fullResponse"));
-                    //TODO: add json infobill
+                        String ambiguousCustomerInformation = llmService.ambiguousDetection(detailCustomerInformation,model);
+                        String ambiguousCustomerResponse = "Tôi thấy có nhiều tên khách hàng tương tự, vui lòng chọn khách hàng bạn mong muốn";
+                        chatMemoryService.storeUserChat(sessionId, "assistant", ambiguousCustomerResponse+ "\n Data: "+ ambiguousCustomerInformation ) ;
 
-                    String ccIsCustomer = llmService.isCustomerInfo(CustomerInfo.get("fullResponse"),model);
-                    if(ccIsCustomer.equalsIgnoreCase("true")){
-                        String ccPrevJson = chatMemoryService.getEntityData(sessionId,FINAL_JSON).toString();
-                        String ccJsonCombined = "\n Đây là dữ liệu JSON hiện tại: \n"
-                                + ccPrevJson
-                                + "\n Đây là thông tin khách hàng: \n"+
-                                CustomerInfo.get("fullResponse");
-                        String ccJsonString = llmService.jsonConverter(ccJsonCombined,model);
-                        JsonNode ccjsonNode = objectMapper.readTree(ccJsonString);
-                        chatMemoryService.storeEntityData(sessionId,FINAL_JSON,ccjsonNode.toString());
-                        result.put("billInfo",ccjsonNode);
+                        String ambiguousCustomerSpeech = viancontroller.sendTextVIAN(ambiguousCustomerResponse);
+                        result.put("ambiguousInfo",ambiguousCustomerInformation);
+                        result.put("fullResponse",ambiguousCustomerResponse);
+                        result.put("audio", ambiguousCustomerSpeech);
+                        ambiguousState = true;
+
+
+
                     }
+
+
+                    else{
+                        Map<String, String>  CustomerInfo = llmService.createCustomerSQL(lastHistory + databaseCheck,model);
+                        chatMemoryService.storeUserChat(sessionId, "assistant", CustomerInfo.get("fullResponse"));
+
+                        //TODO:Add speech
+                        String ccOriginalSpeech = llmService.audioSmoothTranslation(CustomerInfo.get("fullResponse"), model);
+                        String ccSpeech = viancontroller.sendTextVIAN(CustomerInfo.get("fullResponse"));
+                        result.put("audio", ccSpeech);
+
+                        result.put("fullResponse", CustomerInfo.get("fullResponse"));
+                        //TODO: add json infobill
+
+                        String ccIsCustomer = llmService.isCustomerInfo(CustomerInfo.get("fullResponse"),model);
+                        if(ccIsCustomer.equalsIgnoreCase("true")){
+                            String ccPrevJson = chatMemoryService.getEntityData(sessionId,FINAL_JSON).toString();
+                            String ccJsonCombined = "\n Đây là dữ liệu JSON hiện tại: \n"
+                                    + ccPrevJson
+                                    + "\n Đây là thông tin khách hàng: \n"+
+                                    CustomerInfo.get("fullResponse");
+                            String ccJsonString = llmService.jsonConverter(ccJsonCombined,model);
+                            JsonNode ccjsonNode = objectMapper.readTree(ccJsonString);
+                            chatMemoryService.storeEntityData(sessionId,FINAL_JSON,ccjsonNode.toString());
+                            ambiguousState = false;
+                            result.put("billInfo",ccjsonNode);
+                            String ambiguousClarification = "\n Đây là lịch sử cuộc hội thoại: \n"+
+                                    lastHistory;
+                            String jsonCustomerClarification = llmService.ambiguousClarification(ambiguousClarification,model);
+                            result.put("ambiguousInfo",jsonCustomerClarification);
+                        }
+                    }
+
                     break;
 
                 //TODO: add check isCustomer
@@ -376,7 +449,6 @@ public class ShoppingChatController_v2 {
                     Map<String, String> createCustomerInfo = llmService.createCustomerSQL(conversationHistory,model);
                     chatMemoryService.storeUserChat(sessionId, "assistant", createCustomerInfo.get("fullResponse"));
 
-
                     String sqlCustomer = createCustomerInfo.get("sqlQuery");
                     String ccFullResponse = createCustomerInfo.get("fullResponse");
 
@@ -385,15 +457,27 @@ public class ShoppingChatController_v2 {
                         String ccCustomerInfo = sqlExecutionService.executeQuery(sqlCustomer,dbParams).toString();
                         String extractedResponse = llmService.processAnalysis(ccFullResponse,model);
                         chatMemoryService.storeEntityData(sessionId, FINAL_CUSTOMER_INFO, String.valueOf(ccCustomerInfo));
-                        result.put("fullResponse", extractedResponse);
+
+                        String completeCreateCustomerInformation = llmService.ambiguousClarification(lastHistory,model);
+
+                        String completeCreateCustomerInformationResponse = "Thông tin của quý khách đã hoàn thành, bạn có muốn tiến tới lập hóa đơn không?";
+                        String crcSpeech = viancontroller.sendTextVIAN(completeCreateCustomerInformationResponse);
+                        result.put("audio", crcSpeech);
+                        result.put("fullResponse", completeCreateCustomerInformationResponse);
+                        result.put("ambiguousInfo", completeCreateCustomerInformation);
+
                     }
                     else{
+                        String ambiguousCreateCustomerInformation = llmService.ambiguousDetection("Assistant: " + ccFullResponse,model);
+                        String ambiguousCreateCustomerInformationResponse = "Vui lòng cung cấp thêm thông tin để tôi có thể giúp bạn tạo thông tin khách hàng.";
+                        String crcSpeech = viancontroller.sendTextVIAN(ambiguousCreateCustomerInformationResponse);
+                        result.put("audio", crcSpeech);
                         result.put("fullResponse", ccFullResponse);
+                        result.put("ambiguousInfo",ambiguousCreateCustomerInformation);
                     }
-                    //TODO:Add speech
-                    String crcOriginalSpeech = llmService.audioSmoothTranslation(result.get("fullResponse").toString(), model);
-                    String crcSpeech = viancontroller.sendTextVIAN(crcOriginalSpeech);
-                    result.put("audio", crcSpeech);
+
+
+
 
                     //TODO: add json
                     String isCreateCustomerCheck = llmService.isCustomerInfo(result.get("fullResponse").toString(),model);
@@ -429,15 +513,8 @@ public class ShoppingChatController_v2 {
                     chatMemoryService.storeUserChat(sessionId, "assistant", invoiceResult);
                     chatMemoryService.storeEntityData(sessionId,FINAL_INVOICE,invoiceResult);
 
-                    result.put("fullResponse", invoiceResult);
-
-                    //TODO:Add speech
-                    String iOriginalSpeech = llmService.audioSmoothTranslation(invoiceResult, model);
-                    String iSpeech = viancontroller.sendTextVIAN(iOriginalSpeech);
-                    result.put("audio", iSpeech);
-
                     //TODO: add json
-                    String isInvoiceCheck = llmService.isInvoice(result.get("fullResponse").toString(),model);
+                    String isInvoiceCheck = llmService.isInvoice(invoiceResult,model);
                     if(isInvoiceCheck.equalsIgnoreCase("true")){
                         String iPrevJson = chatMemoryService.getEntityData(sessionId,FINAL_JSON).toString();
                         String iJsonCombined = "\n Đây là dữ liệu JSON hiện tại: \n"
@@ -449,12 +526,20 @@ public class ShoppingChatController_v2 {
                         String iJsonString = llmService.jsonConverter(iJsonCombined,model);
                         JsonNode ijsonNode = objectMapper.readTree(iJsonString);
                         chatMemoryService.storeEntityData(sessionId,FINAL_JSON,ijsonNode.toString());
+
+                        //TODO:Add speech
+                        String completeInvoice = "Tôi đã lập hóa đơn. Vui lòng kiểm tra thông tin ở bên. Bây giờ bạn có muốn tiến tới thanh toán hay muốn mua gì thêm?";
+                        String iSpeech = viancontroller.sendTextVIAN(completeInvoice);
+
                         result.put("billInfo",ijsonNode);
+                        result.put("fullResponse", completeInvoice);
+                        result.put("audio", iSpeech);
                     }
                     break;
                 //TODO: add check isPayment
                 case "check_payment":
                     //Create invoice:
+
                     String cpFinalInvoice = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_INVOICE));
                     String cpFinalCustomerInfo = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_CUSTOMER_INFO));
                     String cpCombinedPrompt = "\nThis is invoice information: \n" +
@@ -470,85 +555,94 @@ public class ShoppingChatController_v2 {
 
                     String checkPaymentResult = llmService.processPayment(lastHistory, model);
                     chatMemoryService.storeUserChat(sessionId,"assistant",checkPaymentResult);
+
                     result.put("fullResponse",checkPaymentResult);
 
                     //TODO:Add speech
-                    String cpOriginalSpeech = llmService.audioSmoothTranslation(checkPaymentResult, model);
-                    String cpSpeech = viancontroller.sendTextVIAN(cpOriginalSpeech);
+                    String cpSpeech = viancontroller.sendTextVIAN(checkPaymentResult);
                     result.put("audio", cpSpeech);
 
                     break;
 
                 case "immediately_payment":
-                    String ipFinalInvoice = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_INVOICE));
-                    String ipFinalCustomerInfo = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_CUSTOMER_INFO));
-                    String ipFinalProductDetail = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_PRODUCT_INFO));
-                    String ipFinalInvoiceID = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_INVOICE_ID));
-                    String ipCombinedPrompt = "\nThis is full product information: \n" +
-                            ipFinalProductDetail +
-                            "\nThis is invoice information: \n" +
-                            ipFinalInvoice +
-                            "\nThis is customer information: \n" +
-                            ipFinalCustomerInfo +
-                            "\nThis is conversation between user and assistant: \n" +
-                            ipFinalInvoiceID +
-                            "\n" +
-                            lastHistory
-                            ;
+                     String ipFinalInvoice = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_INVOICE));
+                        String ipFinalCustomerInfo = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_CUSTOMER_INFO));
+                        String ipFinalProductDetail = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_PRODUCT_INFO));
+                        String ipFinalInvoiceID = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_INVOICE_ID));
+                        String ipCombinedPrompt = "\nThis is full product information: \n" +
+                                ipFinalProductDetail +
+                                "\nThis is invoice information: \n" +
+                                ipFinalInvoice +
+                                "\nThis is customer information: \n" +
+                                ipFinalCustomerInfo +
+                                "\nThis is conversation between user and assistant: \n" +
+                                ipFinalInvoiceID +
+                                "\n" +
+                                lastHistory
+                                ;
 
-                    Map<String, String> paymentResult = llmService.createImmediatelyPayment(ipCombinedPrompt, model);
-                    String ipSQLcommand = paymentResult.get("sqlQuery");
-                    String ipFullResponse = paymentResult.get("fullResponse");
-                    if(!ipSQLcommand.isEmpty()){
-                        Integer executeCheck = sqlExecutionService.executeUpdate(ipSQLcommand,dbParams);
-                        String ipFinalResponse = llmService.processAnalysis(ipFullResponse,model);
-                        if(executeCheck == 1){
-                            //TODO:update invoice to paid
-                            String ipUpdateInvoiceSQL = llmService.updatePaidInvoiceSQL(ipFinalInvoiceID,model);
-                            sqlExecutionService.executeUpdate(ipUpdateInvoiceSQL,dbParams);
-                            //TODO: generate invoice detail
-                            String executeInvoiceDetailSQL = llmService.createInvoiceDetail(ipCombinedPrompt,model);
-                            sqlExecutionService.executeUpdate(executeInvoiceDetailSQL,dbParams);
+                        Map<String, String> paymentResult = llmService.createImmediatelyPayment(ipCombinedPrompt, model);
+                        String ipSQLcommand = paymentResult.get("sqlQuery");
+                        String ipFullResponse = paymentResult.get("fullResponse");
+                        if(!ipSQLcommand.isEmpty()){
+                            Integer executeCheck = sqlExecutionService.executeUpdate(ipSQLcommand,dbParams);
+                            String ipFinalResponse = llmService.processAnalysis(ipFullResponse,model);
+                            if(executeCheck == 1){
+                                //TODO:update invoice to paid
+                                String ipUpdateInvoiceSQL = llmService.updatePaidInvoiceSQL(ipFinalInvoiceID,model);
+                                sqlExecutionService.executeUpdate(ipUpdateInvoiceSQL,dbParams);
+                                //TODO: generate invoice detail
+                                String executeInvoiceDetailSQL = llmService.createInvoiceDetail(ipCombinedPrompt,model);
+                                sqlExecutionService.executeUpdate(executeInvoiceDetailSQL,dbParams);
 
-                            //TODO:update stock
-                            String ipFinalProductInfo = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_PRODUCT_INFO));
-                            String ipUpdateStock = "\nThis is invoice information: \n" +
-                                    ipFinalInvoice +
-                                    "\nThis is product information(take the number): \n" +
-                                    ipFinalProductInfo;
-                            String sqlUpdateStock = llmService.updateStock(ipUpdateStock,model);
-                            sqlExecutionService.executeUpdate(sqlUpdateStock,dbParams);
+                                //TODO:update stock
+                                String ipFinalProductInfo = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_PRODUCT_INFO));
+                                String ipUpdateStock = "\nThis is invoice information: \n" +
+                                        ipFinalInvoice +
+                                        "\nThis is product information(take the number): \n" +
+                                        ipFinalProductInfo;
+                                String sqlUpdateStock = llmService.updateStock(ipUpdateStock,model);
+                                sqlExecutionService.executeUpdate(sqlUpdateStock,dbParams);
 
-                            //TODO: update customer last shopping date
-                            String iCustomerInfo = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_CUSTOMER_INFO));
-                            String iUpdateCustomerLastShoppingSQL = llmService.updateLastShopping(iCustomerInfo,model);
-                            sqlExecutionService.executeQuery(iUpdateCustomerLastShoppingSQL,dbParams);
+                                //TODO: update customer last shopping date
+                                String iCustomerInfo = String.valueOf(chatMemoryService.getEntityData(sessionId,FINAL_CUSTOMER_INFO));
+                                String iUpdateCustomerLastShoppingSQL = llmService.updateLastShopping(iCustomerInfo,model);
+                                sqlExecutionService.executeQuery(iUpdateCustomerLastShoppingSQL,dbParams);
 
 
 
-                            //TODO: add json
-                            String ipPrevJson = chatMemoryService.getEntityData(sessionId,FINAL_JSON).toString();
-                            String ipJsonCombined = "\n Đây là dữ liệu JSON hiện tại: \n"
-                                    + ipPrevJson
-                                    + "\n Đây là thông tin phương thức thanh toán: \n"+
-                                    ipFullResponse;
-                            String ipJsonString = llmService.jsonConverter(ipJsonCombined,model);
-                            JsonNode ipjsonNode = objectMapper.readTree(ipJsonString);
-                            chatMemoryService.storeEntityData(sessionId,FINAL_JSON,ipjsonNode.toString());
-                            result.put("billInfo",ipjsonNode);
+                                //TODO: add json
+                                String ipPrevJson = chatMemoryService.getEntityData(sessionId,FINAL_JSON).toString();
+                                String ipJsonCombined = "\n Đây là dữ liệu JSON hiện tại: \n"
+                                        + ipPrevJson
+                                        + "\n Đây là thông tin phương thức thanh toán: \n"+
+                                        ipFullResponse;
+                                String ipJsonString = llmService.jsonConverter(ipJsonCombined,model);
+                                JsonNode ipjsonNode = objectMapper.readTree(ipJsonString);
+                                chatMemoryService.storeEntityData(sessionId,FINAL_JSON,ipjsonNode.toString());
+                                result.put("billInfo",ipjsonNode);
 
+                                String clearImmediatelyPaymentMethodInformation = llmService.ambiguousClarification(lastHistory,model);
+                                result.put("ambiguousInfo",clearImmediatelyPaymentMethodInformation);
+                                String ambiguousImmediatePaymentMethodResponse = "Thanh toán đã hoàn tất cảm ơn bạn đã mua sắm ở cửa hàng của chúng tôi. Bạn có yêu cầu gì thêm không?";
+                                //TODO:Add speech
+                                String ipSpeech = viancontroller.sendTextVIAN(ambiguousImmediatePaymentMethodResponse);
+                                result.put("audio", ipSpeech);
+                                result.put("fullResponse",ambiguousImmediatePaymentMethodResponse);
+                            }
+
+                            chatMemoryService.storeUserChat(sessionId, "assistant", ipFinalResponse);
+                        }else{
+                            String ambiguousImmediatePaymentMethod = llmService.ambiguousDetection("User: " +lastHistory + "\n Assistant: " + ipFullResponse,model);
+                            String ambiguousImmediatePaymentMethodResponse = "Xin vui lòng chọn phương thức thanh toán";
+                            result.put("fullResponse",ambiguousImmediatePaymentMethodResponse);
+                            result.put("ambiguousInfo",ambiguousImmediatePaymentMethod);
+                            chatMemoryService.storeUserChat(sessionId, "assistant", ipFullResponse);
+
+                            //TODO:Add speech
+                            String ipSpeech = viancontroller.sendTextVIAN(ambiguousImmediatePaymentMethodResponse);
+                            result.put("audio", ipSpeech);
                         }
-                        result.put("fullResponse",ipFinalResponse);
-                        chatMemoryService.storeUserChat(sessionId, "assistant", ipFinalResponse);
-                    }else{
-                        result.put("fullResponse",ipFullResponse);
-                        chatMemoryService.storeUserChat(sessionId, "assistant", ipFullResponse);
-                    }
-
-                    //TODO:Add speech
-                    String ipOriginalSpeech = llmService.audioSmoothTranslation(result.get("fullResponse").toString(), model);
-                    String ipSpeech = viancontroller.sendTextVIAN(ipOriginalSpeech);
-                    result.put("audio", ipSpeech);
 
                     break;
                 case "debt":
@@ -560,7 +654,9 @@ public class ShoppingChatController_v2 {
                             dFinalProductDetail +
                             "\nĐây là thông tin ngày tháng năm hiện tại theo định dạng YYYY-MM-DD: \n" +
                             currentDate +
-                            "\nĐây là thông tin hóa đơn: \n" +
+                            "\nĐây  " +
+                            "" +
+                            "b  thông tin hóa đơn: \n" +
                             dFinalInvoice +
                             "\nĐây là thông tin khách hàng: \n" +
                             dFinalCustomerInfo +
@@ -606,13 +702,20 @@ public class ShoppingChatController_v2 {
                             result.put("billInfo",djsonNode);
 
                         }
-                        result.put("fullResponse",dFinalResponse);
+
                         chatMemoryService.storeUserChat(sessionId, "assistant", dFinalResponse);
+
+                        String clearDebtPaymentMethodInformation = llmService.ambiguousClarification(lastHistory,model);
+                        result.put("ambiguousInfo",clearDebtPaymentMethodInformation);
+                        String ambiguousImmediatePaymentMethodResponse = "Thanh toán đã hoàn tất cảm ơn bạn đã mua sắm ở cửa hàng của chúng tôi. Bạn có yêu cầu gì thêm không?";
+
                         //TODO:Add speech
-                        String dOriginalSpeech = llmService.audioSmoothTranslation(dFinalResponse, model);
-                        String dSpeech = viancontroller.sendTextVIAN(dOriginalSpeech);
+                        String dSpeech = viancontroller.sendTextVIAN(ambiguousImmediatePaymentMethodResponse);
                         result.put("audio", dSpeech);
+                        result.put("fullResponse",ambiguousImmediatePaymentMethodResponse);
                     }else{
+                        String ambiguousDebtPaymentMethod = llmService.ambiguousDetection("User: " +lastHistory + "\n Assistant: " + dFullResponse,model);
+                        result.put("ambiguousInfo", ambiguousDebtPaymentMethod);
                         result.put("fullResponse",dFullResponse);
                         chatMemoryService.storeUserChat(sessionId, "assistant", dFullResponse);
                         //TODO:Add speech
@@ -632,10 +735,10 @@ public class ShoppingChatController_v2 {
                     chatMemoryService.storeEntityData(sessionId,FINAL_CHECK_DEBT_INFO,cdResultSQL);
                     String cdFullResponse = llmService.processCheckDebt(cdResultSQL,model);
                     chatMemoryService.storeUserChat(sessionId, "assistant", cdFullResponse);
-                    result.put("fullResponse",cdFullResponse);
+                    String cdResponse = "Đây là thông tin khách hàng theo yêu cầu.";
+                    result.put("fullResponse",cdResponse);
                     //TODO:Add speech
-                    String cdOriginalSpeech = llmService.audioSmoothTranslation(cdFullResponse, model);
-                    String cdSpeech = viancontroller.sendTextVIAN(cdOriginalSpeech);
+                    String cdSpeech = viancontroller.sendTextVIAN(cdResponse);
                     result.put("audio", cdSpeech);
 
                     String cdPrevJson = chatMemoryService.getEntityData(sessionId,FINAL_JSON_DEBT).toString();
@@ -669,6 +772,8 @@ public class ShoppingChatController_v2 {
                         JsonNode imjsonNode = objectMapper.readTree(imJsonString);
                         chatMemoryService.storeEntityData(sessionId,FINAL_JSON_IMPORT,imjsonNode.toString());result.put("productInfo",imjsonNode);
                     }else{
+
+
                         String imJsonCombined = "\n Đây là dữ liệu JSON hiện tại: \n"
                                 + imPrevJson
                                 + "\n Đây là thông tin nhập kho: \n"+
@@ -682,25 +787,33 @@ public class ShoppingChatController_v2 {
                     String iSQLcommand = importResponse.get("sqlQuery");
                     String iFullResponse = importResponse.get("fullResponse");
                     if(!iSQLcommand.isEmpty()){
+                        //NON AMBIGUOUS
+
+                        String ambiguousImportInformation = llmService.ambiguousClarification("User: " +lastHistory + "\n Assistant: " + iFullResponse,model);
+                        result.put("ambiguousInfo",ambiguousImportInformation);
+                        String ambiguousImportInformationResponse = "Nhập kho đã hoàn thành, bạn có yêu cầu gì thêm không?";
+                        result.put("fullResponse",ambiguousImportInformationResponse);
+
                         sqlExecutionService.executeUpdate(iSQLcommand,dbParams);
                         String iFinalResponse = llmService.processAnalysis(iFullResponse,model);
-                        result.put("fullResponse",iFinalResponse);
                         chatMemoryService.storeUserChat(sessionId, "assistant", iFinalResponse);
 
                         //TODO:Add speech
-                        String imOriginalSpeech = llmService.audioSmoothTranslation(iFinalResponse, model);
-                        String imSpeech = viancontroller.sendTextVIAN(imOriginalSpeech);
+                        String imSpeech = viancontroller.sendTextVIAN(ambiguousImportInformationResponse);
                         result.put("audio", imSpeech);
 
                         //
 
                     }else{
-                        result.put("fullResponse",iFullResponse);
+                        //AMBIGUOUS
+                        String ambiguousImportInformation = llmService.ambiguousDetection("User: " +lastHistory + "\n Assistant: " + iFullResponse,model);
+                        result.put("ambiguousInfo",ambiguousImportInformation);
+                        String ambiguousImportInformationResponse = "Vui lòng bổ sung thông tin sản phẩm cần nhập thêm vào kho.";
+                        result.put("fullResponse",ambiguousImportInformationResponse);
                         chatMemoryService.storeUserChat(sessionId, "assistant", iFullResponse);
 
                         //TODO:Add speech
-                        String imOriginalSpeech = llmService.audioSmoothTranslation(iFullResponse, model);
-                        String imSpeech = viancontroller.sendTextVIAN(imOriginalSpeech);
+                        String imSpeech = viancontroller.sendTextVIAN(ambiguousImportInformationResponse);
                         result.put("audio", imSpeech);
                     }
 
@@ -712,13 +825,37 @@ public class ShoppingChatController_v2 {
                     String apSQLcommand = apResponse.get("sqlQuery");
                     String apFullResponse = apResponse.get("fullResponse");
                     if(!apSQLcommand.isEmpty()){
+                        //Nonambiguous
+
+
+
                         sqlExecutionService.executeUpdate(apSQLcommand,dbParams);
                         String apFinalResponse = llmService.processAnalysis(apFullResponse,model);
-                        result.put("fullResponse",apFinalResponse);
+                        String ambiguousAdjustPriceInformation = llmService.ambiguousClarification(lastHistory, model);
+                        String ambiguousAdjustPriceInformationResponse = "Thông tin sản phẩm đã được cập nhập, bạn có yêu cầu gì thêm không?";
+
+                        result.put("fullResponse",ambiguousAdjustPriceInformationResponse);
+                        result.put("ambiguousInfo",ambiguousAdjustPriceInformation);
                         chatMemoryService.storeUserChat(sessionId, "assistant", apFinalResponse);
+
+                        //TODO:Add speech
+                        String apSpeech = viancontroller.sendTextVIAN(ambiguousAdjustPriceInformationResponse);
+                        result.put("audio", apSpeech);
                     }else{
-                        result.put("fullResponse",apFullResponse);
+                        //Ambiguous
+
+
+
+                        String ambiguousAdjustPriceInformation = llmService.ambiguousDetection("User: " +lastHistory + "\n Assistant: " + apFullResponse,model);
+                        String ambiguousAdjustPriceInformationResponse = "Vui lòng điều chỉnh thông tin cho sản phẩm trên";
+
+                        result.put("ambiguousInfo",ambiguousAdjustPriceInformation);
+                        result.put("fullResponse",ambiguousAdjustPriceInformationResponse);
                         chatMemoryService.storeUserChat(sessionId, "assistant", apFullResponse);
+
+                        //TODO:Add speech
+                        String apSpeech = viancontroller.sendTextVIAN(ambiguousAdjustPriceInformationResponse);
+                        result.put("audio", apSpeech);
                     }
 
                     //TODO: add JSON extracted information
@@ -739,10 +876,7 @@ public class ShoppingChatController_v2 {
                         result.put("productAdjust",apjsonNode);
                     }
 
-                    //TODO:Add speech
-                    String apOriginalSpeech = llmService.audioSmoothTranslation(apFullResponse, model);
-                    String apSpeech = viancontroller.sendTextVIAN(apOriginalSpeech);
-                    result.put("audio", apSpeech);
+
                     break;
 
                 case "restock_alert":
@@ -750,11 +884,11 @@ public class ShoppingChatController_v2 {
                     String raResultSQL = sqlExecutionService.executeQuery(callRestockAlert,dbParams).toString();
                     String raFullResponse = llmService.stockAlert(raResultSQL,model);
                     chatMemoryService.storeUserChat(sessionId, "assistant", raFullResponse);
-                    result.put("fullResponse",raFullResponse);
+                    String raResponse = "Đây là những mặt hàng cần bổ sung. Vui lòng kiểm tra";
+                    result.put("fullResponse",raResponse);
 
                     //TODO:Add speech
-                    String raOriginalSpeech = llmService.audioSmoothTranslation(raFullResponse, model);
-                    String raSpeech = viancontroller.sendTextVIAN(raOriginalSpeech);
+                    String raSpeech = viancontroller.sendTextVIAN(raResponse);
                     result.put("audio", raSpeech);
 
                     //TODO: add json
@@ -820,11 +954,11 @@ public class ShoppingChatController_v2 {
                             + "\n User Conversation \n" + message;
                     String ciFullResponse = llmService.processCheckCustomerShoppingActivity(ciCombinedPrompt,model);
                     chatMemoryService.storeUserChat(sessionId, "assistant", ciFullResponse);
-                    result.put("fullResponse",ciFullResponse);
+                    String ciResponse = "Đây là danh sách khách hàng đã lâu không mua hàng theo yêu cầu của bạn. Vui lòng kiểm tra.";
+                    result.put("fullResponse",ciResponse);
 
                     //TODO:Add speech
-                    String ciOriginalSpeech = llmService.audioSmoothTranslation(ciFullResponse, model);
-                    String ciSpeech = viancontroller.sendTextVIAN(ciOriginalSpeech);
+                    String ciSpeech = viancontroller.sendTextVIAN(ciResponse);
                     result.put("audio", ciSpeech);
 
                     //TODO: add json
