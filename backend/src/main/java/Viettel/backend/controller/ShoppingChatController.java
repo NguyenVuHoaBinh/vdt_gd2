@@ -1,7 +1,7 @@
 package Viettel.backend.controller;
 
 import Viettel.backend.AdvanceRAG.service.Chunker;
-import Viettel.backend.AdvanceRAG.service.OpenAIEmbeddingService;
+import Viettel.backend.AdvanceRAG.service.OpenAiEmbeddingService;
 import Viettel.backend.AdvanceRAG.service.SearchService;
 import Viettel.backend.agentState.TaskAnalysisService;
 import Viettel.backend.config.databaseconfig.DatabaseConfig;
@@ -14,24 +14,17 @@ import Viettel.backend.service.datahubservice.DataHubIngestionService;
 import Viettel.backend.service.elasticsearch.ElasticsearchService;
 import Viettel.backend.service.elasticsearch.IndexService;
 import Viettel.backend.service.elasticsearch.SearchAndRerankService;
-import Viettel.backend.service.llmservice.ChatMemoryService;
+import Viettel.backend.service.ChatMemoryService;
 import Viettel.backend.service.llmservice.LLMService;
 import Viettel.backend.service.metadataservice.GraphQLService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 // Additional imports
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.sql.DataSource;
-import java.io.File;
-import java.io.FileWriter;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,7 +38,7 @@ public class ShoppingChatController {
     private DatabaseConfig databaseConfig;
 
     @Autowired
-    private OpenAIEmbeddingService embeddingService;
+    private OpenAiEmbeddingService embeddingService;
 
     @Autowired
     private GraphQLService graphQLService;

@@ -1,5 +1,7 @@
 package Viettel.backend.config;
 
+import Viettel.backend.logs_tracing.SQLLogWebAppender;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -11,14 +13,17 @@ import Viettel.backend.logs_tracing.WebSocketLogHandler;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    private final WebSocketLogHandler webSocketLogHandler;
-
-    public WebSocketConfig(WebSocketLogHandler webSocketLogHandler) {
-        this.webSocketLogHandler = webSocketLogHandler;
+    @Bean
+    public WebSocketLogHandler webSocketLogHandler() {
+        WebSocketLogHandler handler = new WebSocketLogHandler();
+        SQLLogWebAppender.setWebSocketLogHandler(handler);
+        return handler;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(webSocketLogHandler, "/logs").setAllowedOrigins("*");
+        registry.addHandler(webSocketLogHandler(), "/logs").setAllowedOrigins("*");
     }
+
+
 }

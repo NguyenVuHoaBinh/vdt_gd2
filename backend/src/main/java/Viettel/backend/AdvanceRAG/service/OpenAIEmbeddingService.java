@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 @Service
-public class OpenAIEmbeddingService {
+public class OpenAiEmbeddingService {
 
     private final RestTemplate restTemplate;
 
@@ -19,7 +19,7 @@ public class OpenAIEmbeddingService {
 
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/embeddings";
 
-    public OpenAIEmbeddingService() {
+    public OpenAiEmbeddingService() {
         this.restTemplate = new RestTemplate();
     }
 

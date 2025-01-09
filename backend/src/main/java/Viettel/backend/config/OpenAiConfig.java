@@ -9,13 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
  * Configuration class for managing OpenAI API dependencies.
  */
 @Configuration
-public class OpenAiApiConfiguration {
+public class OpenAiConfig {
 
     @Value("${openai.api.key}")
-    private String apiKey;
+    private String OPENAI_KEY;
 
     @Bean
     public OpenAiApi openAiApi() {
-        return new OpenAiApi(apiKey);
+        return new OpenAiApi(OPENAI_KEY);
     }
 }

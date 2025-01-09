@@ -1,7 +1,7 @@
 package Viettel.backend.controller;
 
 import Viettel.backend.AdvanceRAG.service.Chunker;
-import Viettel.backend.AdvanceRAG.service.OpenAIEmbeddingService;
+import Viettel.backend.AdvanceRAG.service.OpenAiEmbeddingService;
 import Viettel.backend.AdvanceRAG.service.SearchService;
 import Viettel.backend.agentState.TaskAnalysisService;
 import Viettel.backend.config.databaseconfig.DatabaseConfig;
@@ -14,7 +14,7 @@ import Viettel.backend.service.datahubservice.DataHubIngestionService;
 import Viettel.backend.service.elasticsearch.ElasticsearchService;
 import Viettel.backend.service.elasticsearch.IndexService;
 import Viettel.backend.service.elasticsearch.SearchAndRerankService;
-import Viettel.backend.service.llmservice.ChatMemoryService;
+import Viettel.backend.service.ChatMemoryService;
 import Viettel.backend.service.llmservice.LLMService;
 import Viettel.backend.service.metadataservice.GraphQLService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,7 +46,7 @@ public class ShoppingChatController_v2 {
     private DatabaseConfig databaseConfig;
 
     @Autowired
-    private OpenAIEmbeddingService embeddingService;
+    private OpenAiEmbeddingService embeddingService;
 
     @Autowired
     private GraphQLService graphQLService;

@@ -1,4 +1,4 @@
-package Viettel.backend.service.llmservice;
+package Viettel.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,17 +8,14 @@ import redis.clients.jedis.AbstractTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing chat memory, including session metadata and chat history.
  */
 @Service
 public class ChatMemoryService {
-
     private static final Logger logger = LoggerFactory.getLogger(ChatMemoryService.class);
 
     // Distinct prefixes for metadata and chat history
@@ -267,10 +264,10 @@ public class ChatMemoryService {
      * @param entityType the type of entity (e.g., "chat", "order", "invoice")
      * @return a list of data entries or an empty list if not found or on error
      */
-    public List<String> getEntityData(String sessionId, String entityType) {
+    public List<String> fetchEntityData(String sessionId, String entityType) {
         if (!isValidSessionId(sessionId) || !isValidEntityType(entityType)) {
             logger.warn("Invalid sessionId or entityType provided for retrieving data. sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType);
-            return new ArrayList<>();
+            return null;
         }
 
         String redisKey = entityType + ":" + sessionId;
@@ -279,12 +276,12 @@ public class ChatMemoryService {
             List<String> dataEntries = jedisPooled.lrange(redisKey, 0, -1);
             if (dataEntries == null || dataEntries.isEmpty()) {
                 logger.info("No data found for sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType);
-                return new ArrayList<>();
+                return null;
             }
             return dataEntries;
         } catch (JedisException e) {
             logger.error("Failed to retrieve data for sessionId: {}, entityType: {}", maskSessionId(sessionId), entityType, e);
-            return new ArrayList<>();
+            return null;
         }
     }
 
@@ -338,6 +335,20 @@ public class ChatMemoryService {
                 entityType.equals("finalPlaying")
                 ;
     }
+
+    public String fetchRecentChats(List<String> chat, int limit, String newMessage) {
+        return chat.stream()
+                .skip(Math.max(0, chat.size() - limit))
+                .map(entry -> {
+                    String[] parts = entry.split(":", 3);
+                    if (parts.length == 3) return parts[0] + ": " + parts[2];
+                    return null; // Skip malformed entries
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("\n")) + "\nuser: " + newMessage + "\n";
+    }
+
+
 
 
 
