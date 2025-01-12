@@ -6,10 +6,10 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import { FaMicrophone } from 'react-icons/fa';
 
 const NLP2MYDIO = () => {
-  const [model, setModel] = useState('gpt-3');
+  const [model, setModel] = useState('gpt-4o');
   const [connected, setConnected] = useState(true);
   const [sessionId, setSessionId] = useState(null);
-  const [viewMode, setViewMode] = useState('UI'); 
+  const [viewMode, setViewMode] = useState('UI');
   const [logs, setLogs] = useState([]);
   const [chatLog, setChatLog] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -39,32 +39,24 @@ const NLP2MYDIO = () => {
       // Auto trigger greeting endpoint when sessionId is set
       const triggerGreeting = async () => {
         try {
-          const response = await fetch('https://cd83-58-187-4-197.ngrok-free.app/v2/Mydio_greeting', {
+          const response = await fetch('https://localhost:8888/v2/mydio/greet', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId })
+            headers: {
+              'Content-Type': 'application/json', // Include this if backend expects JSON
+            },
           });
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          const result = await response.json();
-          setChatLog((prevChatLog) => [
-            ...prevChatLog,
-            { user: 'bot', text: result.fullResponse }
-          ]);
-          if (result.audio) {
-            console.log('Audio data found, playing audio.');
-            const audioBase64 = result.audio;
-            const audioBlob = new Blob([new Uint8Array(atob(audioBase64).split('').map(c => c.charCodeAt(0)))], { type: 'audio/wav' });
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            audio.play();
-            audio.addEventListener('ended', () => {
-              URL.revokeObjectURL(audioUrl);
-            });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
           }
+
+          const result = await response.json(); // Parse JSON if the backend responds with it
+          console.log('Greeting Response:', result);
         } catch (error) {
-          console.error('Error with greeting API:', error);
+          console.error('Error triggering greeting endpoint:', error);
         }
       };
+
       triggerGreeting();
     }
   }, [sessionId]);
@@ -105,24 +97,29 @@ const NLP2MYDIO = () => {
     }
     console.log('callApiEndpoint called with message and model:', message, model);
     try {
-      const response = await fetch('https://cd83-58-187-4-197.ngrok-free.app/v2/Mydio_chat', {
+      const response = await fetch('https://localhost:8888/v2/mydio/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, model, sessionId: currentSessionId }),
+        body: JSON.stringify({
+          message: message,
+          model: "gpt-4o",
+          sessionId: currentSessionId,
+          mydioIndex: "books"
+        }),
       });
-  
+
       console.log('API response status:', response.status);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
       console.log('API response result:', result);
-  
+
       // Prepare messages to add to chatLog
       const newMessages = [];
-  
-      if (result.fullResponse?.trim()) {
-        newMessages.push({ text: result.fullResponse, user: 'bot' });
+
+      if (result.response?.trim()) {
+        newMessages.push({ text: result.response, user: 'bot' });
       }
-  
+
       if (result.sqlQuery?.trim()) {
         newMessages.push({
           text: `**SQL Query:**\n\
@@ -131,15 +128,15 @@ const NLP2MYDIO = () => {
           user: 'bot',
         });
       }
-  
+
       if (Array.isArray(result.queryResult) && result.queryResult.length > 0) {
         const table = generateTable(result.queryResult);
         newMessages.push({ text: `**Result:**\n${table}`, user: 'bot' });
       }
-  
+
       // Add new messages to chatLog
       setChatLog((prevChatLog) => [...prevChatLog, ...newMessages]);
-  
+
       // Check if audio data is available and handle it
       if (result.audio) {
         console.log('Audio data found, playing audio.');
@@ -151,10 +148,10 @@ const NLP2MYDIO = () => {
         audio.play();
         audio.addEventListener('ended', () => {
           URL.revokeObjectURL(audioUrl);
-          
+
         });
       }
-  
+
       // Clear other states as needed based on response properties
       if (result.billInfo) setBillInfo(result.billInfo);
       if (result.productInfo) setProductInfo(result.productInfo);
@@ -164,7 +161,7 @@ const NLP2MYDIO = () => {
       if (result.inactiveInfo) setInactiveInfo(result.inactiveInfo);
       if (result.restockAlertInfo) setRestockAlertInfo(result.restockAlertInfo);
       if (result.trendInfo) setTrendInfo(result.trendInfo);
-  
+
     } catch (error) {
       console.error('Error with API models:', error);
       setChatLog((prevChatLog) => [
@@ -173,7 +170,7 @@ const NLP2MYDIO = () => {
       ]);
     }
   };
-  
+
 
   const handleChatSubmit = useCallback(
     async (message) => {
@@ -240,20 +237,20 @@ const NLP2MYDIO = () => {
       <div style={{ marginBottom: '20px' }}>
         {/* Button Group for view selection */}
         <CButtonGroup role="group" aria-label="View selection">
-          <CButton 
-            color={viewMode === 'UI' ? 'primary' : 'secondary'} 
+          <CButton
+            color={viewMode === 'UI' ? 'primary' : 'secondary'}
             onClick={() => setViewMode('UI')}
           >
             UI
           </CButton>
-          <CButton 
-            color={viewMode === 'API UI' ? 'primary' : 'secondary'} 
+          <CButton
+            color={viewMode === 'API UI' ? 'primary' : 'secondary'}
             onClick={() => setViewMode('API UI')}
           >
             API UI
           </CButton>
-          <CButton 
-            color={viewMode === 'Log UI' ? 'primary' : 'secondary'} 
+          <CButton
+            color={viewMode === 'Log UI' ? 'primary' : 'secondary'}
             onClick={() => setViewMode('Log UI')}
           >
             Log UI
@@ -272,12 +269,12 @@ const NLP2MYDIO = () => {
             </CCardHeader>
             <CCardBody>
               {/* Render ChatBoxMydio component with necessary props */}
-              <ChatBoxMydio 
-                model={model} 
-                sessionId={sessionId} 
-                connected={connected} 
-                chatLog={chatLog} 
-                setChatLog={setChatLog} 
+              <ChatBoxMydio
+                model={model}
+                sessionId={sessionId}
+                connected={connected}
+                chatLog={chatLog}
+                setChatLog={setChatLog}
                 callApiEndpoint={callApiEndpoint}
               />
               <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>

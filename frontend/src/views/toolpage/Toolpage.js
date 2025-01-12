@@ -26,25 +26,25 @@ const Toolpage = () => {
       // Define commands
       const commands = {
         'open MySQL tool': () => {
-          window.location.href = 'http://localhost:3000/#/NLP2MySQL'
+          window.location.href = 'https://localhost:3000/#/NLP2MySQL'
         },
         'open PostgreSQL tool': () => {
-          window.location.href = 'http://localhost:3000/#/NLP2PostGreSQL'
+          window.location.href = 'https://localhost:3000/#/NLP2PostGreSQL'
         },
         'open Microsoft SQL tool': () => {
-          window.location.href = 'http://localhost:3000/#/NLP2MSSQL'
+          window.location.href = 'https://localhost:3000/#/NLP2MSSQL'
         },
         'open JSON tool': () => {
-          window.location.href = 'http://localhost:3000/#/NLP2JSONSchema'
+          window.location.href = 'https://localhost:3000/#/NLP2JSONSchema'
         },
         'open vPOS tool': () => {
           window.location.href = 'http://localhost:3000/#/NLP2VPOS'
         },
         'open Mydio tool': () => {
-          window.location.href = 'https://cd83-58-187-4-197.ngrok-free.app/#/NLP2MYDIO'
+          window.location.href = 'https://localhost:3000/#/NLP2MYDIO'
         },
         'hi vian': () => {
-          window.location.href = 'https://cd83-58-187-4-197.ngrok-free.app/#/NLP2MYDIO'
+          window.location.href = 'https://localhost:3000/#/NLP2MYDIO'
         },
       }
 
@@ -66,7 +66,7 @@ const Toolpage = () => {
           <CCardText>
             Quickly generate SQL command to MySQL database and retrieve any information you desired.
           </CCardText>
-          <CButton color="primary" href="http://localhost:3000/#/NLP2MySQL">
+          <CButton color="primary" href="https://localhost:3000/#/NLP2MySQL">
             Use
           </CButton>
         </CCardBody>
@@ -79,7 +79,7 @@ const Toolpage = () => {
           <CCardText>
             Quickly generate SQL command to PostgreSQL database and retrieve any information you desired.
           </CCardText>
-          <CButton color="primary" href="http://localhost:3000/#/NLP2PostGreSQL">
+          <CButton color="primary" href="https://localhost:3000/#/NLP2PostGreSQL">
             Use
           </CButton>
         </CCardBody>
@@ -92,7 +92,7 @@ const Toolpage = () => {
           <CCardText>
             Quickly generate SQL command to Microsoft SQL Server database and retrieve any information you desired.
           </CCardText>
-          <CButton color="primary" href="http://localhost:3000/#/NLP2MSSQL">
+          <CButton color="primary" href="https://localhost:3000/#/NLP2MSSQL">
             Use
           </CButton>
         </CCardBody>
@@ -103,7 +103,7 @@ const Toolpage = () => {
         <CCardBody>
           <CCardTitle>NLP to JSON-SCHEMA Query</CCardTitle>
           <CCardText>Quickly generate SQL based on JSON-SCHEMA.</CCardText>
-          <CButton color="primary" href="http://localhost:3000/#/NLP2JSONSchema">
+          <CButton color="primary" href="https://localhost:3000/#/NLP2JSONSchema">
             Use
           </CButton>
         </CCardBody>
@@ -114,7 +114,7 @@ const Toolpage = () => {
         <CCardBody>
           <CCardTitle>NLP to vPOS</CCardTitle>
           <CCardText>ASR SELLING</CCardText>
-          <CButton color="primary" href="http://localhost:3000/#/NLP2VPOS">
+          <CButton color="primary" href="https://localhost:3000/#/NLP2VPOS">
             Use
           </CButton>
         </CCardBody>
@@ -125,7 +125,7 @@ const Toolpage = () => {
         <CCardBody>
           <CCardTitle>Mydio</CCardTitle>
           <CCardText>Speaking Books</CCardText>
-          <CButton color="primary" href="https://cd83-58-187-4-197.ngrok-free.app/#/NLP2MYDIO">
+          <CButton color="primary" href="https://localhost:3000/#/NLP2MYDIO">
             Use
           </CButton>
         </CCardBody>
