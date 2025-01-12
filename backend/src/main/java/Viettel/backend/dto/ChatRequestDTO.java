@@ -13,9 +13,13 @@ public class ChatRequestDTO {
     @NotBlank(message = "No message from user")
     private String message;
 
-    private String systemRole = "";
+    private String role = "";
 
     @NotBlank(message = "A model is required")
     private String model;
+
+    // TODO: more indexes? from FE
+    @NotBlank(message = "Choose a field (ie books)")
+    private String mydioIndex;
 
 }

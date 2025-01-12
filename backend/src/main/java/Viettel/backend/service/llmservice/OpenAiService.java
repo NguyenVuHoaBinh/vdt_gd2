@@ -1,13 +1,17 @@
 package Viettel.backend.service.llmservice;
 
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -15,38 +19,30 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Scope("prototype")
 public class OpenAiService implements LLMService {
-    private static final Logger logger = LoggerFactory.getLogger(OpenAiService.class);
-
     @Value("${openai.api.key}")
     private String OPENAI_KEY;
 
     @Value("${openai.api.url}")
     private String OPENAI_URL;
 
-    private final RestTemplate restTemplate;
-    private final String model;
-
-    @Autowired
-    public OpenAiService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        this.model = "gpt-4o-mini"; // default model
-    }
-
-    public OpenAiService(RestTemplate restTemplate, String model) {
-        this.restTemplate = restTemplate;
-        this.model = model;
-    }
+    @Setter
+    private String model;
 
     public String sendPrompt(String filePath, String userPrompt,
                              int maxTokens, double temperature) {
-
+        System.out.println("Sending prompt to " + OPENAI_URL);
+        // TODO refactor for filepath, should be systemPrompt
         String systemPrompt = "";
         try {
             systemPrompt = new String(Files.readAllBytes(Paths.get(filePath)));
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // TODO: double check this for da luong
+        RestTemplate restTemplate = new RestTemplate();
 
         // HTTP headers
         HttpHeaders headers = new HttpHeaders();
@@ -75,6 +71,8 @@ public class OpenAiService implements LLMService {
                 Map<String, Object> firstChoice = choices.get(0);
                 Map<String, Object> messageMap = (Map<String, Object>) firstChoice.get("message");
                 String fullResponse = (String) messageMap.get("content");
+
+                System.out.println(model);
 
                 return fullResponse;
             }

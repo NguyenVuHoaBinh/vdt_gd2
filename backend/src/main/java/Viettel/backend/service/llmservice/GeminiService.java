@@ -1,7 +1,9 @@
 package Viettel.backend.service.llmservice;
 
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -13,21 +15,16 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Scope("prototype")
 public class GeminiService implements LLMService {
-    private static final Logger logger = LoggerFactory.getLogger(GeminiService.class);
-
     @Value("${gemini.api.key}")
     private String GEMINI_KEY;
 
     @Value("${gemini.api.url}")
     private String GEMINI_URL;
 
-    @Autowired
-    private final RestTemplate restTemplate;
-
-    public GeminiService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    @Setter
+    private String model;
 
     // TODO:
     //  no examples for GEMINI yet

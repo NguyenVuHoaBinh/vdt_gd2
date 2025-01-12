@@ -21,8 +21,8 @@ public class SearchService {
     private final ElasticsearchClient elasticsearchClient;
     private final EmbeddingService embeddingService;
 
-    // @Autowired
-    // private OpenAIEmbeddingService openAIEmbeddingService;
+//     @Autowired
+//     private OpenAiEmbeddingService openAIEmbeddingService;
 
     public SearchService(ElasticsearchClient elasticsearchClient, EmbeddingService embeddingService) {
         this.elasticsearchClient = elasticsearchClient;
@@ -34,9 +34,9 @@ public class SearchService {
             String queryText,
             double[] queryEmbedding,
             int numCandidates,
-            int numResults) throws IOException {
+            int numResults) {
 
-        // dataForElasticsearch();
+//         dataForElasticsearch();
 
         // Validate input parameters
         if (queryEmbedding == null || queryEmbedding.length == 0) {
@@ -111,7 +111,7 @@ public class SearchService {
             }
         } catch (IOException e) {
             System.err.println("Error executing Elasticsearch search: " + e.getMessage());
-            throw e;
+            return results;
         }
 
         return results;

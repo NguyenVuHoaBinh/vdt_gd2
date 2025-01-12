@@ -1,16 +1,20 @@
 package Viettel.backend.service.llmservice;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 @Service
 public interface LLMService {
-    public String sendPrompt(String filePath, String userPrompt,
+
+    String sendPrompt(String filePath, String userPrompt,
                              int maxTokens, double temperature);
+
+    default String generateRefinedQuery(String userInput) {
+        // TODO handle filepath
+        String systemPrompt = "src/main/resources/static/refiningQuery.txt";
+        int maxTokens = 200;
+        int temperature = 1;
+        return sendPrompt(systemPrompt, userInput, maxTokens, temperature);
+    }
 
 
 //    Map<String, String> processMessage(String message, String model, String role);

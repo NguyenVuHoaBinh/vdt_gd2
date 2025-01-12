@@ -1,5 +1,6 @@
 package Viettel.backend.service;
 
+import Viettel.backend.dto.ChatRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisPooled;
@@ -336,9 +337,12 @@ public class ChatMemoryService {
                 ;
     }
 
-    public String fetchRecentChats(List<String> chat, int limit, String newMessage) {
-        return chat.stream()
-                .skip(Math.max(0, chat.size() - limit))
+    public String fetchRecentChats(ChatRequestDTO userChat, int limit) {
+        List<String> chatHistory = getUserChat(userChat.getSessionId());
+        String newMessage = userChat.getMessage();
+
+        return chatHistory.stream()
+                .skip(Math.max(0, chatHistory.size() - limit))
                 .map(entry -> {
                     String[] parts = entry.split(":", 3);
                     if (parts.length == 3) return parts[0] + ": " + parts[2];
@@ -347,6 +351,13 @@ public class ChatMemoryService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining("\n")) + "\nuser: " + newMessage + "\n";
     }
+
+    public String fetchMostRecentChat(ChatRequestDTO userChat) {
+        return fetchRecentChats(userChat, 1);
+    }
+
+
+
 
 
 

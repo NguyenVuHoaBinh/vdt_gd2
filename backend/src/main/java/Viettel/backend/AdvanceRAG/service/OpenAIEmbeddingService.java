@@ -109,7 +109,7 @@ public class OpenAiEmbeddingService {
 
             return embeddings;
 
-    } else {
+        } else {
             // Handle errors appropriately
             throw new RuntimeException("Failed to get embeddings from OpenAI API. Status code: " + response.getStatusCode());
         }
