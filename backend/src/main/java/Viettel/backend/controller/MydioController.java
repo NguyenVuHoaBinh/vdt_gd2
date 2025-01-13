@@ -1,6 +1,5 @@
 package Viettel.backend.controller;
 
-import Viettel.backend.AdvanceRAG.service.SearchService;
 import Viettel.backend.dto.ChatRequestDTO;
 import Viettel.backend.dto.ChatResponseDTO;
 import Viettel.backend.service.MydioService;
@@ -11,9 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/v2/mydio")

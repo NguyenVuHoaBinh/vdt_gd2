@@ -32,7 +32,7 @@ public class LLMServiceFactory {
         Function<String, LLMService> llmService = llms.get(MODEL);
 
         if (llmService == null) {
-            MODEL = "gpt-40-mini";
+            MODEL = "gpt-4o-mini";
             llmService = this::createOpenAiService;
         }
         return llmService.apply(MODEL);
