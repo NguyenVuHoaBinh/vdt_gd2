@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ChatMemoryService {
+    // TODO this whole thing, metadata unused
     private static final Logger logger = LoggerFactory.getLogger(ChatMemoryService.class);
 
     // Distinct prefixes for metadata and chat history
