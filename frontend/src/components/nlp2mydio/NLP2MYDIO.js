@@ -206,6 +206,7 @@ const NLP2MYDIO = () => {
 
   const handleMicrophoneClick = () => {
     if (listening) {
+
       SpeechRecognition.stopListening();
     } else {
       SpeechRecognition.startListening({ continuous: true });

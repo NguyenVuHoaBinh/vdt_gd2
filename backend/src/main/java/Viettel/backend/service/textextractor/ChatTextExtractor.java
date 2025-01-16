@@ -1,6 +1,6 @@
 package Viettel.backend.service.textextractor;
 
-import Viettel.backend.model.ChatDocument;
+import Viettel.backend.todo.model.ChatDocument;
 
 import java.util.Map;
 

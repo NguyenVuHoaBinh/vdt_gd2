@@ -1,10 +1,11 @@
 package Viettel.backend.service;
 
 import Viettel.backend.dto.ChatRequestDTO;
-import Viettel.backend.service.llmservice.LLMService;
-import Viettel.backend.service.llmservice.LLMServiceFactory;
-import Viettel.backend.AdvanceRAG.service.OpenAiEmbeddingService;
-import Viettel.backend.AdvanceRAG.service.SearchService;
+import Viettel.backend.service.chatmemory.ChatMemoryService;
+import Viettel.backend.service.llm.LLMService;
+import Viettel.backend.service.llm.LLMServiceFactory;
+import Viettel.backend.service.rag.text2embed.OpenAiEmbeddingService;
+import Viettel.backend.service.rag.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

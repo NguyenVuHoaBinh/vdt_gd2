@@ -3,7 +3,7 @@ package Viettel.backend.controller;
 import Viettel.backend.dto.ChatRequestDTO;
 import Viettel.backend.dto.ChatResponseDTO;
 import Viettel.backend.service.MydioService;
-import Viettel.backend.service.ViAnService;
+import Viettel.backend.service.tts.ViAnService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +22,7 @@ public class MydioController {
 
     @PostMapping("/greet")
     public ChatResponseDTO greeting(){
+        // TODO fe not displaying greetings at the beginning (its showing under inspect tho)
         String response = "Chào bạn, đây là ứng dụng sách nói Mydio của Viettel. Hôm nay bạn muốn nghe sách gì?";
         String tts = "Chào bạn, đây là ứng dụng sách nói mai đi ô của việt ten. Hôm nay bạn muốn nghe sách gì?";
         String audio = viAnService.encodeAudioToBase64(tts);

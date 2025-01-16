@@ -1,8 +1,8 @@
 package Viettel.backend.service.elasticsearch;
 
-import Viettel.backend.model.DocumentWithEmbedding;
-import Viettel.backend.model.MetadataDocument;
-import Viettel.backend.service.llmservice.EmbeddingService;
+import Viettel.backend.todo.model.DocumentWithEmbedding;
+import Viettel.backend.todo.model.MetadataDocument;
+import Viettel.backend.service.rag.text2embed.EmbeddingService;
 import Viettel.backend.service.textextractor.TextExtractor;
 import Viettel.backend.service.textextractor.TextExtractorFactory;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;

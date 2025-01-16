@@ -3,6 +3,7 @@ package Viettel.backend.dto;
 import java.util.List;
 
 public class ModelResponse {
+    // TODO this
 
     private String name;
     private List<String> versions;

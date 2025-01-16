@@ -1,7 +1,7 @@
 package Viettel.backend.service.textextractor;
 
 
-import Viettel.backend.model.MetadataDocument;
+import Viettel.backend.todo.model.MetadataDocument;
 
 import java.util.Map;
 

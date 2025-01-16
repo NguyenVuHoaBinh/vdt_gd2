@@ -13,6 +13,7 @@ public class ChatRequestDTO {
     @NotBlank(message = "No message from user")
     private String message;
 
+    // TODO nani?
     private String role = "";
 
     @NotBlank(message = "A model is required")

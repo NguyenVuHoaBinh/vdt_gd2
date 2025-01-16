@@ -1,4 +1,4 @@
-package Viettel.backend.service.llmservice;
+package Viettel.backend.service.llm;
 
 import java.util.Map;
 

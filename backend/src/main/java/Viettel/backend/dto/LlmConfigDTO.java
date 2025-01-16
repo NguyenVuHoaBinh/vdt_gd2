@@ -3,6 +3,7 @@ package Viettel.backend.dto;
 import jakarta.validation.constraints.*;
 
 public class LlmConfigDTO {
+    // TODO mod, might move to model?
     @NotBlank(message = "No model found")
     private String model;
 
