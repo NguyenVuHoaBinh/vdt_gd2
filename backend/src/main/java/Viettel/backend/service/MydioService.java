@@ -68,7 +68,7 @@ public class MydioService {
         // No recent chat from ChatMemory
         if (searchState == null && openState == null) return "FIND";
 
-        LLMService llmService = llmServiceFactory.createLLMService(userChat.getModel());
+        LLMService llmService = llmServiceFactory.createLLMService(userChat.getLlmModel());
 
         // TODO build a class for prompt retrieval
         String systemPrompt = "src/main/resources/static/mydio/analysis.txt";
@@ -80,13 +80,13 @@ public class MydioService {
     }
 
     public String find(ChatRequestDTO userChat) {
-        LLMService llmService = llmServiceFactory.createLLMService(userChat.getModel());
+        LLMService llmService = llmServiceFactory.createLLMService(userChat.getLlmModel());
 
         // Step 1: Generate refined query and HyDE document
         String refinedQuery = llmService.generateRefinedQuery(userChat.getMessage());
 
         // Step 2: Generate embedding for the hypothetical document
-        double[] hydeEmbedding = openAiEmbeddingService.getEmbedding(refinedQuery);
+        float[] hydeEmbedding = openAiEmbeddingService.embedText(refinedQuery);
 
         // Step 3: Perform hybrid search
         int numCandidates = 100;
@@ -119,7 +119,7 @@ public class MydioService {
     }
 
     public String execute(ChatRequestDTO userChat) {
-        LLMService llmService = llmServiceFactory.createLLMService(userChat.getModel());
+        LLMService llmService = llmServiceFactory.createLLMService(userChat.getLlmModel());
         List<String> openState = chatMemoryService.fetchEntityData(userChat.getSessionId(), LAST_OPENED);
 
         // TODO prompt retrieval
@@ -143,7 +143,7 @@ public class MydioService {
     }
 
     public String open(ChatRequestDTO userChat) {
-        LLMService llmService = llmServiceFactory.createLLMService(userChat.getModel());
+        LLMService llmService = llmServiceFactory.createLLMService(userChat.getLlmModel());
         List<String> openState = chatMemoryService.fetchEntityData(userChat.getSessionId(), LAST_OPENED);
 
         // TODO prompt builder/ retrieval

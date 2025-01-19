@@ -1,6 +1,7 @@
 package Viettel.backend.service.cache;
 
 import Viettel.backend.service.rag.text2embed.EmbeddingService;
+import Viettel.backend.service.rag.text2embed.EmbeddingServiceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisPooled;
@@ -19,19 +20,19 @@ import java.util.Map;
 @Service
 public class SemanticCacheService {
 
+    @Autowired
+    private EmbeddingServiceFactory embeddingServiceFactory;
+
     private static final Logger logger = LoggerFactory.getLogger(SemanticCacheService.class);
     private static final String INDEX_NAME = "semantic_cache_index";
     private static final String VECTOR_FIELD_NAME = "embedding";
     private static final int EMBEDDING_DIMENSION = 1536;
 
     private final JedisPooled jedisPooled;
-    private final EmbeddingService embeddingService;
 
     @Autowired
-    public SemanticCacheService(JedisPooled jedisPooled, EmbeddingService embeddingService) {
+    public SemanticCacheService(JedisPooled jedisPooled) {
         this.jedisPooled = jedisPooled;
-        this.embeddingService = embeddingService;
-
         // Ensure the index is created
         createIndexIfNotExists();
     }
@@ -74,9 +75,10 @@ public class SemanticCacheService {
     }
 
     public void cacheResponse(String query, String response) {
+        EmbeddingService embeddingService = embeddingServiceFactory.createEmbeddingService("x");
         try {
             // Generate the embedding vector for the query
-            float[] embeddingVector = embeddingService.generateEmbedding(query);
+            float[] embeddingVector = embeddingService.embedText(query);
 
             // Create a unique ID for the document using SHA-256
             String documentId = generateDocumentId(query);
@@ -122,9 +124,10 @@ public class SemanticCacheService {
 
     // Method to perform hybrid semantic search using vector and non-vector criteria
     public String performHybridSearch(String query) {
+        EmbeddingService embeddingService = embeddingServiceFactory.createEmbeddingService("x");
         try {
             // Generate the embedding vector for the input query
-            float[] queryEmbedding = embeddingService.generateEmbedding(query);
+            float[] queryEmbedding = embeddingService.embedText(query);
             byte[] embeddingBytes = floatToByte(queryEmbedding);
 
             int K = 1;

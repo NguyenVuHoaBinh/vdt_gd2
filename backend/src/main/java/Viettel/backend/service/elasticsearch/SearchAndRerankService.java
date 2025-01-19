@@ -1,8 +1,9 @@
 package Viettel.backend.service.elasticsearch;
 
+import Viettel.backend.service.rag.text2embed.EmbeddingService;
+import Viettel.backend.service.rag.text2embed.EmbeddingServiceFactory;
 import Viettel.backend.todo.model.DocumentWithEmbedding;
 import co.elastic.clients.json.JsonData;
-import Viettel.backend.service.rag.text2embed.EmbeddingService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
@@ -18,15 +19,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class SearchAndRerankService {
+    @Autowired
+    private EmbeddingServiceFactory embeddingServiceFactory;
     //TODO: Implement reranking technique
     private final ElasticsearchClient elasticsearchClient;
-    private final EmbeddingService embeddingService;
     private final PreRetrievalService preRetrievalService;
 
     @Autowired
-    public SearchAndRerankService(ElasticsearchClient elasticsearchClient, EmbeddingService embeddingService, PreRetrievalService preRetrievalService) {
+    public SearchAndRerankService(ElasticsearchClient elasticsearchClient, PreRetrievalService preRetrievalService) {
         this.elasticsearchClient = elasticsearchClient;
-        this.embeddingService = embeddingService;
         this.preRetrievalService = preRetrievalService;
     }
 
@@ -48,7 +49,8 @@ public class SearchAndRerankService {
 
     private List<DocumentWithEmbedding> searchDocumentsWithQuery(String indexName, String query) throws IOException {
         // Generate the query embedding
-        float[] queryEmbedding = embeddingService.generateEmbedding(query);
+        EmbeddingService embeddingService = embeddingServiceFactory.createEmbeddingService("x");
+        float[] queryEmbedding = embeddingService.embedText(query);
 
         // Prepare parameters map and convert the embedding to JsonData
         Map<String, JsonData> params = new HashMap<>();

@@ -1,10 +1,11 @@
 package Viettel.backend.service.rag.indexing;
 
+import Viettel.backend.service.rag.text2embed.EmbeddingService;
+import Viettel.backend.service.rag.text2embed.EmbeddingServiceFactory;
 import Viettel.backend.todo.model.MetadataDocument;
 import Viettel.backend.service.elasticsearch.ElasticsearchService;
 import Viettel.backend.service.metadata.GraphQLService;
 import Viettel.backend.service.rag.preprocessing.Chunker;
-import Viettel.backend.service.rag.text2embed.EmbeddingService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -17,19 +18,16 @@ public class DocumentService {
 
     private final ElasticsearchService elasticsearchService;
     private final GraphQLService graphQLService;
-    private final EmbeddingService embeddingService;
     private final Chunker chunker;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     public DocumentService(Chunker chunker,
-                           EmbeddingService embeddingService,
                            ElasticsearchService elasticsearchService,
                            GraphQLService graphQLService) {
         this.elasticsearchService = elasticsearchService;
         this.graphQLService = graphQLService;
         this.chunker = chunker;
-        this.embeddingService = embeddingService;
     }
 
     public void processDocuments(String indexName, String databaseName) throws Exception {

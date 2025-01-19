@@ -1,8 +1,9 @@
 package Viettel.backend.service.elasticsearch;
 
+import Viettel.backend.service.rag.text2embed.EmbeddingService;
+import Viettel.backend.service.rag.text2embed.EmbeddingServiceFactory;
 import Viettel.backend.todo.model.DocumentWithEmbedding;
 import Viettel.backend.todo.model.MetadataDocument;
-import Viettel.backend.service.rag.text2embed.EmbeddingService;
 import Viettel.backend.service.textextractor.TextExtractor;
 import Viettel.backend.service.textextractor.TextExtractorFactory;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -18,13 +19,14 @@ import java.util.UUID;
 @Service
 public class ElasticsearchService {
 
+    @Autowired
+    private EmbeddingServiceFactory embeddingServiceFactory;
     private final ElasticsearchClient elasticsearchClient;
-    private final EmbeddingService embeddingService;
+
 
     @Autowired
-    public ElasticsearchService(ElasticsearchClient elasticsearchClient, EmbeddingService embeddingService) {
+    public ElasticsearchService(ElasticsearchClient elasticsearchClient) {
         this.elasticsearchClient = elasticsearchClient;
-        this.embeddingService = embeddingService;
     }
 
     public void indexSchemaElement(String indexName, String id, Map<String, Object> element) {
@@ -62,7 +64,8 @@ public class ElasticsearchService {
         String textContent = extractTextFromDocument(document);
 
         // Generate an embedding for the document's text
-        float[] embedding = embeddingService.generateEmbedding(textContent);
+        EmbeddingService embeddingService = embeddingServiceFactory.createEmbeddingService("x");
+        float[] embedding = embeddingService.embedText(textContent);
 
         // Generate a unique document ID
         String documentId = sessionId + "-" + UUID.randomUUID().toString();

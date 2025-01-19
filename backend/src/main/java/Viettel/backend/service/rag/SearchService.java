@@ -1,6 +1,7 @@
 package Viettel.backend.service.rag;
 
 import Viettel.backend.service.rag.text2embed.EmbeddingService;
+import Viettel.backend.service.rag.text2embed.EmbeddingServiceFactory;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Script;
@@ -8,6 +9,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,20 +20,20 @@ import java.util.*;
 public class SearchService {
 
     private final ElasticsearchClient elasticsearchClient;
-    private final EmbeddingService embeddingService;
+//    private final EmbeddingService embeddingService = new EmbeddingServiceFactory().createEmbeddingService("x");
 
 //     @Autowired
 //     private OpenAiEmbeddingService openAIEmbeddingService;
 
-    public SearchService(ElasticsearchClient elasticsearchClient, EmbeddingService embeddingService) {
+    @Autowired
+    public SearchService(ElasticsearchClient elasticsearchClient) {
         this.elasticsearchClient = elasticsearchClient;
-        this.embeddingService = embeddingService;
     }
 
     public List<Map<String, Object>> hybridSearch(
             String indexName,
             String queryText,
-            double[] queryEmbedding,
+            float[] queryEmbedding,
             int numCandidates,
             int numResults) {
 
@@ -47,8 +49,8 @@ public class SearchService {
         }
 
         // Convert queryEmbedding to List<Double> for script params
-        List<Double> queryVector = new ArrayList<>();
-        for (double f : queryEmbedding) {
+        List<Float> queryVector = new ArrayList<>();
+        for (float f : queryEmbedding) {
             queryVector.add(f); // Convert float to double
         }
 

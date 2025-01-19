@@ -16,8 +16,11 @@ public class ChatRequestDTO {
     // TODO nani?
     private String role = "";
 
-    @NotBlank(message = "A model is required")
-    private String model;
+    @NotBlank(message = "A llm model is required")
+    private String llmModel;
+
+    @NotBlank(message = "An embedding model is required")
+    private String embeddingmodel;
 
     // TODO: more indexes? from FE
     @NotBlank(message = "Choose a field (ie books)")

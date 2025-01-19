@@ -1,6 +1,7 @@
 package Viettel.backend.service.rag.indexing;
 
 import Viettel.backend.service.rag.text2embed.EmbeddingService;
+import Viettel.backend.service.rag.text2embed.EmbeddingServiceFactory;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
@@ -15,12 +16,9 @@ public class ElasticSearchService {
     // TODO this + elastic config
 
     private final ElasticsearchClient elasticsearchClient;
-    private final EmbeddingService embeddingService;
-
     @Autowired
-    public ElasticSearchService(ElasticsearchClient elasticsearchClient, EmbeddingService embeddingService) {
+    public ElasticSearchService(ElasticsearchClient elasticsearchClient) {
         this.elasticsearchClient = elasticsearchClient;
-        this.embeddingService = embeddingService;
     }
 
     public String indexMetadataDocument(String indexName, String id, Map<String, Object> document) throws IOException {
