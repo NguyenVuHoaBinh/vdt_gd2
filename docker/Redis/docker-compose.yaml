@@ -18,6 +18,9 @@ services:
         restart: always
         ports:
             - "5540:5540"
+        networks:
+            redis_network:
+                ipv4_address: 172.38.0.18
         volumes:
             - redis-insight:/data
 
